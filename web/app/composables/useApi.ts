@@ -31,6 +31,7 @@ export function toApiError(error: unknown): ApiError {
 export function useApi() {
   const config = useRuntimeConfig()
   const toast = useToast()
+  const router = useRouter()
 
   async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, options: RequestOptions = {}) {
     try {
@@ -42,6 +43,17 @@ export function useApi() {
       })
     } catch (raw) {
       const error = toApiError(raw)
+
+      // The session ended (expired, signed out elsewhere, or the account was removed): go to the login page.
+      if (error.status === 401 && !path.startsWith('/auth/')) {
+        useAuthStore().clear()
+        const current = router.currentRoute.value
+        if (current.path !== '/login') {
+          await router.push({ path: '/login', query: { redirect: current.fullPath } })
+        }
+        throw error
+      }
+
       if (!options.silent) {
         toast.add({ severity: 'error', summary: error.title, detail: error.userMessage, life: 6000 })
       }

@@ -96,7 +96,7 @@ function removeLink() {
 <template>
   <Dialog v-model:visible="visible" modal header="Configure encoder" class="w-[min(32rem,calc(100vw-2rem))]">
     <form v-if="device" class="flex flex-col gap-4" @submit.prevent="save">
-      <p class="-mt-2 truncate text-xs text-zinc-500" :title="device.stableId">{{ device.name }}</p>
+      <p class="-mt-2 text-xs break-words text-zinc-500" :title="device.stableId">{{ device.name }}</p>
 
       <div class="flex flex-col gap-1">
         <label for="link-name" class="text-sm">Name</label>
@@ -163,6 +163,7 @@ function removeLink() {
             :max="240"
             :max-fraction-digits="3"
             placeholder="30"
+            fluid
             :invalid="!!fieldError('frameRate')"
           />
         </div>

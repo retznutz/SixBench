@@ -70,7 +70,7 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:3000**, then:
+Open **http://localhost:3000** and sign in as **`admin` / `ChangeMe!123`** (from `Identity:SeedAdmin`). You'll be asked to choose a new password first. Then:
 
 1. **Settings › Roku devices**: click **Discover**, or enter the Roku's IP address and click **Add**.
 2. **Settings › Encoders**: click **Configure** on your capture device, choose the Roku plugged into it, and optionally turn on device audio.
@@ -101,22 +101,56 @@ Copy the output folder to the server and run `SixBench.Api.exe` (Windows) or `./
 
 ### Network access
 
-The server listens on **all interfaces, port 5216** by default (`Kestrel:Endpoints:Http:Url` in `appsettings.json`).
+The server listens on **all interfaces, port 5216** by default (`Server:Port` in `appsettings.json`). That one port serves HTTP, or HTTPS once a certificate is set up.
 
 - **Firewall (Windows):** allow the port. Accept the first-run prompt, or run this in an admin shell:
   `netsh advfirewall firewall add rule name="SixBench" dir=in action=allow protocol=TCP localport=5216`
-- **HTTPS is needed for viewers on other machines.** Browsers only allow WebCodecs in a *secure context*. `http://localhost` qualifies, but `http://192.168.1.20:5216` does not: the page loads and the remote works, but no video decodes. Add an HTTPS endpoint with a certificate your viewers trust:
+- **HTTPS is needed for viewers on other machines.** Browsers only allow WebCodecs in a *secure context*. `http://localhost` qualifies, but `http://192.168.1.20:5216` does not: the page loads and the remote works, but no video decodes. Set up a free certificate as described below.
 
-  ```json
-  "Kestrel": {
-    "Endpoints": {
-      "Http":  { "Url": "http://*:5216" },
-      "Https": { "Url": "https://*:7270", "Certificate": { "Path": "certs/sixbench.pfx", "Password": "change-me" } }
-    }
-  }
-  ```
+### Domain and certificate (HTTPS)
 
-> ⚠️ **Security:** SixBench has **no authentication**. Anyone who can reach the port can watch the stream and control the linked Rokus. Run it on a trusted network, or put it behind a reverse proxy that handles authentication.
+An administrator sets up HTTPS under **Settings › Domain and Certificate Setup**. SixBench gets a free Let's Encrypt certificate using a **DNS-01 challenge**: it creates the `_acme-challenge` TXT record through your DNS provider's API, so no ports need to be open for the certificate itself.
+
+Supported DNS providers and the credentials each needs:
+
+| Provider | Credentials | Where to get them |
+|---|---|---|
+| Cloudflare | API Token | dash.cloudflare.com, with DNS:Edit permission for the zone |
+| DuckDNS | Token, Subdomain | duckdns.org account page |
+| Route53 | Access Key ID, Secret Access Key | IAM user with `route53:ChangeResourceRecordSets` and `route53:ListHostedZonesByName` |
+| DigitalOcean | API Token | Personal access token with write scope |
+| GoDaddy | API Key, API Secret | developer.godaddy.com, **Production** keys |
+
+The wizard has three steps:
+1. **DNS Provider:** pick your provider.
+2. **Domain & Credentials:** enter the host name and root domain (for example `sixbench` . `example.com`), your email for the Let's Encrypt account, and the provider credentials. Click **Test** to check them. **Point domain to this server** (on by default) also creates or updates the domain's A record with the server's public IP, which is detected automatically. **Port Forwarding Instructions** explains how to reach SixBench from outside your network.
+3. **Provision:** shows live progress: setting the A record, creating the order, setting the TXT record, waiting for it to appear on the domain's nameservers, validation, and issuing. This takes 30–90 seconds. The TXT record is removed afterwards.
+
+When it finishes:
+- The certificate is saved as `data/certs/sixbench-cert.pfx` (no password; readable only by the server's user on macOS and Linux). The ACME account key is kept next to it.
+- The domain, email, provider and **encrypted** DNS credentials are saved in the database (`TlsSetting` table), and TLS is turned on. Credentials are encrypted with the same Data Protection keys as sign-in cookies (`data/keys`).
+- **A restart is required** to switch the port from HTTP to HTTPS. Click **Restart Now**. SixBench starts a new copy of itself and exits, and the new copy waits for the old one to release the port. If SixBench runs under a service manager (Windows service, systemd, launchd), set `Server:SelfRestart` to `false`. **Restart Now** then only stops SixBench, and the service manager starts it again.
+- Open SixBench at the address shown, `https://<domain>:<port>`. After the restart, plain HTTP on that port no longer works.
+
+**Automatic renewal:** a background job checks daily and renews the certificate when it is within 30 days of expiry, using the stored credentials. The new certificate is used immediately, without a restart.
+
+**Remove** deletes the certificate. SixBench keeps serving HTTPS until it restarts, then falls back to HTTP.
+
+To try the whole flow without using up production rate limits, set `Tls:UseStaging` to `true`. Staging certificates aren't trusted by browsers.
+
+> ⚠️ With **Point domain to this server** on, the domain resolves to your *public* IP. Viewers on your LAN then reach SixBench through your router (hairpin NAT). If your router doesn't support that, add a local DNS entry for the domain that points to the server's LAN address.
+
+### Users and sign-in
+
+Every page and API call requires signing in, except `/health` and `/swagger`.
+
+- **First start:** when there are no users, SixBench creates an administrator from `Identity:SeedAdmin` (default `admin` / `ChangeMe!123`). It must choose a new password at first sign-in. If `Password` is empty, a random one is generated and written to the log. ⚠️ The default password is public (it's in this repository). Change it right away, or set your own before the first start.
+- **Roles:** **User** can watch and control Rokus and manage Roku and encoder settings. **Admin** can also add, edit and delete users and set up HTTPS.
+- **Users page (admins):** add users with an initial password (they must change it at first sign-in), change roles, set a new password (this also unlocks the account), and delete users. You can't delete yourself or remove the last administrator. Changing someone's role or password, or deleting them, signs them out within a minute.
+- **Lockout:** five wrong passwords lock an account for five minutes.
+- Sign-ins use a cookie (`SixBench.Auth`, 14 days with **Keep me signed in**). The keys that protect it are stored in `data/keys`; on Windows they are encrypted with DPAPI.
+
+> ⚠️ **Security:** until HTTPS is set up, passwords and the sign-in cookie cross the network unencrypted. Use plain HTTP only on a network you trust.
 
 ## Configuration
 
@@ -124,7 +158,8 @@ All settings live in `src/SixBench.Api/appsettings.json`, with overrides in `app
 
 | Section | Key | Default | Description |
 |---|---|---|---|
-| `Kestrel` | `Endpoints:Http:Url` | `http://*:5216` | Listen address and port. Overrides `launchSettings.json` and `ASPNETCORE_URLS`. |
+| `Server` | `Port` | `5216` | Port on all interfaces: HTTPS when TLS is on and a certificate exists, otherwise HTTP. Overrides `launchSettings.json` and `ASPNETCORE_URLS`. |
+| | `SelfRestart` | `true` | **Restart Now** starts a new SixBench process. Set `false` under a service manager. |
 | `ConnectionStrings` | `SixBench` | `Data Source=data/sixbench.db` | SQLite database. Relative paths resolve against the app folder. Migrations run at startup. |
 | `Ffmpeg` | `Path` | `ffmpeg` | ffmpeg executable, e.g. `C:/Tools/ffmpeg/bin/ffmpeg.exe`. |
 | | `VideoEncoder` | `libx264` | `libx264`, `h264_nvenc` (NVIDIA), `h264_qsv` (Intel), `h264_amf` (AMD), `h264_videotoolbox` (macOS), `h264_vaapi` (Linux). Other names are passed through unchanged. |
@@ -139,6 +174,13 @@ All settings live in `src/SixBench.Api/appsettings.json`, with overrides in `app
 | | `DeviceBitrate` | `128k` | Opus bitrate. |
 | `Roku` | `DiscoveryTimeoutMs` | `3000` | How long discovery listens for replies. |
 | | `EcpPort` / `RequestTimeoutMs` / `TextCharDelayMs` | `8060` / `3000` / `25` | |
+| `Tls` | `Enabled` | `false` | Serve HTTPS. Turned on from the web app (stored in the database), so you normally leave this. |
+| | `Domain` / `Email` / `DnsProvider` / `DnsCredentials` | empty | Set by the web app. `DnsCredentials` here is plain text and only a fallback; the web app stores credentials encrypted. |
+| | `CertificateDirectory` | `data/certs` | Where the certificate (`sixbench-cert.pfx`) and ACME account key are kept. |
+| | `UseStaging` | `false` | Use the Let's Encrypt staging server (untrusted test certificates). |
+| | `ValidationTimeoutSeconds` | `120` | How long to wait for the TXT record to appear and for validation. |
+| `Identity` | `SeedAdmin:UserName` / `SeedAdmin:Password` | `admin` / `ChangeMe!123` | Administrator created on first start (only when there are no users). |
+| `DataProtection` | `KeysPath` | `data/keys` | Where sign-in cookie keys are stored. |
 | `ApplicationInsights` | `ConnectionString` | empty | Turns on Azure Application Insights telemetry when set. |
 | `Serilog` | | console + `logs/sixbench-*.log` | Logging levels and outputs. |
 
@@ -185,7 +227,14 @@ Start with **`http://<server>:5216/health`**. It reports the database status, th
 | No encoders listed | Check that ffmpeg runs (`Ffmpeg:Path`) and the device is plugged in, then click **Rescan**. On macOS, grant Camera access. On Linux, make sure the user is in the `video` group. |
 | `Unknown encoder 'libx264'` | Your ffmpeg build doesn't include x264. Install a GPL build, or set `Ffmpeg:VideoEncoder` to a hardware encoder listed in `/health`. |
 | `Selected framerate … is not supported` / device busy | Set **Frame rate / Video size / Pixel format** for that encoder (Settings › Configure › Capture settings). Close other apps using the device (OBS, Camera, Teams). |
-| Page works, video black, on another machine | Not a secure context. Serve HTTPS (see [Network access](#network-access)). |
+| Page works, video black, on another machine | Not a secure context. Serve HTTPS (see [Domain and certificate](#domain-and-certificate-https)). |
+| Certificate: **Test** says the provider rejected the credentials | Check the key or token and its permissions. GoDaddy needs Production keys, and the root domain must be in that account. |
+| Certificate: *The TXT record … did not appear* | The provider accepted the record but its nameservers didn't serve it in time. Let's Encrypt wasn't asked, so no rate limit was used. Try again. Raise `Tls:ValidationTimeoutSeconds` for slow providers. |
+| Certificate: *Domain validation failed* / *too many failed authorizations* | Let's Encrypt saw a different value or none. Production rate-limits failures; set `Tls:UseStaging` to `true` while you troubleshoot. |
+| Domain is in a zone like `example.co.uk` | Not supported: the root domain is taken as the last two labels. |
+| HTTPS page doesn't load after **Restart Now** | Use `https://` and the port shown in Settings. If SixBench didn't come back, start it again (or set `Server:SelfRestart` to match how it's run). |
+| Signed out after a role change or deletion | Expected: sessions pick up account changes within a minute. |
+| Locked out of the only admin account | Wait five minutes. If the password is lost, stop SixBench, delete the `User`, `UserRole` and other `User*` rows from `data/sixbench.db` (or the whole file), and restart to get the seed administrator again. |
 | Remote shows *"Roku … rejected … HTTP 403"* | Turn on *Control by mobile apps* on the Roku. |
 | **Discover** finds nothing | SSDP multicast is blocked between the server and the Roku (VLANs, guest Wi-Fi, firewalls). Add the Roku by IP instead. |
 | Device audio unavailable | The encoder needs an audio device the OS can see (on Windows, check *Privacy › Microphone* and *Sound › Input*), and the encoder's **Allow device audio** setting must be on. |
@@ -195,9 +244,9 @@ Start with **`http://<server>:5216/health`**. It reports the database status, th
 ```
 src/
   SixBench.Common     DTOs, enums, stream protocol constants, options, PathUtil, DeviceKey
-  SixBench.Data       EF Core + SQLite (tables: RokuDevice, EncoderLink), repositories, migrations
+  SixBench.Data       EF Core + SQLite (tables: RokuDevice, EncoderLink, TlsSetting, and Identity's User, Role, UserRole, …), repositories, migrations
   SixBench.Services   Device enumeration, ffmpeg pipelines, H.264/Opus parsing, session fan-out,
-                      WebSocket handler, Roku ECP client, SSDP discovery
+                      WebSocket handler, Roku ECP client, SSDP discovery, users, certificates (Certes DNS-01 via DNS provider APIs, renewal)
   SixBench.Api        ASP.NET Core Web API (versioned controllers, Swagger, Serilog, health checks),
                       hosts the built web app
 tests/
@@ -228,9 +277,21 @@ Interactive documentation is at **`/swagger`**. Capture devices are addressed by
 | POST | `/api/v1/roku-devices/{id}/keys` | `{ "key": "Home", "action": "Press" \| "Down" \| "Up" }` |
 | POST | `/api/v1/roku-devices/{id}/text` | `{ "text": "..." }`, typed one character at a time |
 | GET | `/api/v1/streams` | Active sessions and per-viewer stats |
+| POST | `/api/v1/auth/login` · `/auth/logout` | `{ "userName", "password", "rememberMe" }`; sets / clears the sign-in cookie |
+| GET · POST | `/api/v1/auth/me` · `/auth/me/password` | Signed-in user / change own password `{ "currentPassword", "newPassword" }` |
+| GET · POST | `/api/v1/users` | **Admin.** List users / create `{ "userName", "email", "password", "role" }` |
+| GET · PUT · DELETE | `/api/v1/users/{id}` | **Admin.** A user; update `{ "email", "role" }` |
+| POST | `/api/v1/users/{id}/password` | **Admin.** Set a password `{ "newPassword" }` (also unlocks) |
+| GET | `/api/v1/certificates/status` | **Admin.** Installed certificate, auto-renewal, whether HTTPS is active |
+| GET | `/api/v1/certificates/providers` | **Admin.** DNS providers and the credentials each needs |
+| POST | `/api/v1/certificates/validate-credentials` | **Admin.** `{ "dnsProvider", "dnsCredentials", "domain" }` → `{ "success", "message" }` |
+| GET | `/api/v1/certificates/public-ip` | **Admin.** The server's public IP |
+| POST | `/api/v1/certificates/provision` | **Admin.** `{ "domain", "email", "dnsProvider", "dnsCredentials", "setupDnsRecord", "publicIp" }`; progress on the `/hubs/certificates` SignalR hub |
+| DELETE | `/api/v1/certificates` | **Admin.** Remove the certificate (HTTP after restart) |
+| POST | `/api/v1/server/restart` | **Admin.** Restart (self-relaunch unless `Server:SelfRestart` is false) |
 | GET | `/health` | JSON health report (database, ffmpeg) |
 
-Errors are returned as RFC 7807 `application/problem+json`.
+Every route except `/health` needs the sign-in cookie: 401 when signed out, 403 for a User calling an Admin route. Errors are returned as RFC 7807 `application/problem+json`.
 
 ### Stream WebSocket
 
@@ -265,6 +326,6 @@ npm test                    # Vitest
 
 - **No microphone to the Roku.** Roku ECP has no documented way to accept audio, and HDMI capture only goes one way. The protocol messages exist, but the server always refuses the mic.
 - **About one frame of server-side delay.** A frame is only known to be complete when the next one begins.
-- **No authentication** (see [Network access](#network-access)).
+- **Certificates need one of the five supported DNS providers.** Domains in multi-label zones such as `co.uk` aren't supported.
 - **No channel launcher yet.**
 - **PrimeVue is pinned to 4.x (MIT).** PrimeVue 5 needs a PrimeUI license key.

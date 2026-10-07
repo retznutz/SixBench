@@ -9,5 +9,11 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <Authors>Matt Retzer</Authors>
     <Product>SixBench</Product>
+    <!--
+      dotnet-ef before 10.0.12 creates a folder literally named "bin\Debug" on macOS/Linux. Its presence stops the SDK
+      from excluding bin/ from default items, so each build copies bin into itself until paths get too long.
+      ("?" matches the backslash.)
+    -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin?Debug/**;bin?Release/**;obj?Debug/**;obj?Release/**</DefaultItemExcludes>
   </PropertyGroup>
 </Project>

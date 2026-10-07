@@ -30,7 +30,11 @@ public sealed class StreamsController(ICaptureSessionManager sessions) : Control
     /// <param name="id">Capture device id.</param>
     /// <param name="handler">Socket handler.</param>
     /// <returns>Nothing once the socket closes; 400 when the request is not a WebSocket upgrade.</returns>
-    [HttpGet("{id}/ws")]
+    /// <remarks>
+    /// Uses <c>[Route]</c> rather than <c>[HttpGet]</c>: over HTTPS, browsers open WebSockets with HTTP/2
+    /// extended CONNECT (RFC 8441) instead of an HTTP/1.1 GET upgrade.
+    /// </remarks>
+    [Route("{id}/ws")]
     [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<IActionResult> Connect(string id, [FromServices] IStreamSocketHandler handler)
     {

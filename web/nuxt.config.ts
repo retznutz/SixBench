@@ -56,6 +56,8 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/api': { target: `${apiDevTarget}/api`, changeOrigin: true, ws: true },
+      // SignalR (certificate progress). Without WebSocket forwarding it falls back to server-sent events.
+      '/hubs': { target: `${apiDevTarget}/hubs`, changeOrigin: true, ws: true },
     },
   },
   typescript: {

@@ -39,7 +39,7 @@ public sealed class RepositoryTests : IDisposable
     {
         var tables = _db.Model.GetEntityTypes().Select(e => e.GetTableName()).Order();
 
-        Assert.Equal(["EncoderLink", "RokuDevice"], tables);
+        Assert.Equal(["EncoderLink", "RokuDevice", "Role", "RoleClaim", "TlsSetting", "User", "UserClaim", "UserLogin", "UserRole", "UserToken"], tables);
     }
 
     [Fact]

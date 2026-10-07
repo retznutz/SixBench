@@ -1,1 +1,0 @@
-import{t as e}from"./Cxvj1CVF.js";var t={name:`Row`,extends:e,inject:[`$rows`],mounted:function(){var e;(e=this.$rows)==null||e.add(this.$)},unmounted:function(){var e;(e=this.$rows)==null||e.delete(this.$)},render:function(){return null}};export{t as default};
