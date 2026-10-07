@@ -48,6 +48,18 @@ public class FfmpegArgsBuilderTests
         Assert.Contains("-rtbufsize", args);
     }
 
+    [Theory]
+    [InlineData("h264_amf", "-c:v h264_amf -usage ultralowlatency")]
+    [InlineData("h264_nvenc", "-c:v h264_nvenc -preset p1 -tune ull")]
+    [InlineData("h264_mf", "-c:v h264_mf -pix_fmt yuv420p")]
+    public void Encoders_get_matching_arguments(string encoder, string expected)
+    {
+        var text = Join(FfmpegArgsBuilder.BuildVideo(Source(HostPlatform.Windows, "cam"), new FfmpegOptions { VideoEncoder = encoder }));
+
+        Assert.Contains(expected, text);
+        Assert.DoesNotContain("libx264", text);
+    }
+
     [Fact]
     public void Linux_uses_v4l2_input_format_for_pixel_format()
     {

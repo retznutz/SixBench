@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using SixBench.Common.Enums;
 using SixBench.Common.Options;
 using SixBench.Services.Capture;
+using SixBench.Services.Ffmpeg;
 using SixBench.Services.Links;
 using SixBench.Services.Processes;
 using SixBench.Services.Roku;
@@ -38,6 +39,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IProcessRunner, ProcessRunner>();
+        services.AddSingleton<IFfmpegCapabilities, FfmpegCapabilities>();
+        services.AddHostedService<FfmpegStartupCheck>();
 
         // Capture
         switch (HostPlatformDetector.Current)

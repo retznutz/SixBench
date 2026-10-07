@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -38,7 +39,9 @@ try
         .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<ApiExceptionHandler>();
-    builder.Services.AddHealthChecks().AddDbContextCheck<SixBenchDbContext>();
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<SixBenchDbContext>()
+        .AddCheck<FfmpegHealthCheck>("ffmpeg");
 
     builder.Services
         .AddApiVersioning(o =>
@@ -99,7 +102,7 @@ try
     app.UseStaticFiles();
 
     app.MapControllers();
-    app.MapHealthChecks("/health");
+    app.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = HealthResponseWriter.WriteAsync });
 
     // SPA fallback for client-side routes; unknown API paths stay 404.
     app.MapFallback("api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));

@@ -309,11 +309,13 @@
         <member name="M:SixBench.Services.Capture.DeviceListParsers.DshowDeviceLine">
             <remarks>
             Pattern:<br/>
-            <code>^\\[dshow @ [^\\]]+\\]\\s+"(?&lt;name&gt;[^"]+)"(?:\\s+\\((?&lt;kind&gt;video|audio|none)\\))?\\s*$</code><br/>
+            <code>^\\[[^\\]]+ @ [^\\]]+\\]\\s+"(?&lt;name&gt;[^"]+)"(?:\\s+\\((?&lt;kind&gt;video|audio|none)\\))?\\s*$</code><br/>
             Explanation:<br/>
             <code>
             ○ Match if at the beginning of the string.<br/>
-            ○ Match the string "[dshow @ ".<br/>
+            ○ Match '['.<br/>
+            ○ Match a character other than ']' greedily at least once.<br/>
+            ○ Match the string " @ ".<br/>
             ○ Match a character other than ']' atomically at least once.<br/>
             ○ Match ']'.<br/>
             ○ Match a whitespace character atomically at least once.<br/>

@@ -36,6 +36,7 @@ export class StreamClient {
   private keyframeRequested = 0
   private endMessage: string | undefined
   private endIsError = false
+  private receivedVideo = false
 
   // Stats accumulators (reset each interval).
   private bytes = 0
@@ -87,7 +88,9 @@ export class StreamClient {
     this.ws = ws
 
     ws.onopen = () => {
-      this.backoffMs = 1000
+      // Backoff resets on the first video frame, not here: a socket can open and then fail
+      // immediately (e.g. ffmpeg missing an encoder), which must not cause a 1-second retry loop.
+      this.receivedVideo = false
       this.startStats()
     }
     ws.onmessage = (event) => this.onMessage(event)
@@ -116,6 +119,11 @@ export class StreamClient {
       const header = readAudioHeader(data)
       if (header) this.audio?.push(data, header)
       return
+    }
+
+    if (!this.receivedVideo) {
+      this.receivedVideo = true
+      this.backoffMs = 1000
     }
 
     const now = performance.now()

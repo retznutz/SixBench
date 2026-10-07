@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SixBench.Common.Enums;
 using SixBench.Common.Utilities;
 using SixBench.Services.Capture;
+using SixBench.Services.Ffmpeg;
 
 namespace SixBench.Tests.Api;
 
@@ -19,7 +20,13 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
     public ApiTests(Factory factory) => _client = factory.CreateClient();
 
     [Fact]
-    public async Task Health_is_ok() => Assert.Equal("Healthy", await _client.GetStringAsync("/health"));
+    public async Task Health_is_ok()
+    {
+        var health = await _client.GetFromJsonAsync<JsonElement>("/health");
+
+        Assert.Equal("Healthy", health.GetProperty("status").GetString());
+        Assert.Equal("Healthy", health.GetProperty("checks").GetProperty("ffmpeg").GetProperty("status").GetString());
+    }
 
     [Fact]
     public async Task Lists_capture_devices_with_url_safe_ids()
@@ -87,6 +94,8 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
             {
                 services.RemoveAll<ICaptureDeviceEnumerator>();
                 services.AddSingleton<ICaptureDeviceEnumerator, FakeEnumerator>();
+                services.RemoveAll<IFfmpegCapabilities>();
+                services.AddSingleton<IFfmpegCapabilities, FakeCapabilities>();
             });
         }
 
@@ -106,5 +115,11 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
             Platform,
             [new VideoDeviceInfo("test:usb", "USB Video", "USB Video")],
             [new AudioDeviceInfo("MacBook Pro Microphone", "MacBook Pro Microphone"), new AudioDeviceInfo("USB Digital Audio", "USB Digital Audio")]));
+    }
+
+    private sealed class FakeCapabilities : IFfmpegCapabilities
+    {
+        public Task<FfmpegCapabilityReport> GetAsync(CancellationToken ct = default) =>
+            Task.FromResult(new FfmpegCapabilityReport(true, "libx264", true, true, ["libx264"], null));
     }
 }

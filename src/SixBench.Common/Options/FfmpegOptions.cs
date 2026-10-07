@@ -11,7 +11,10 @@ public sealed class FfmpegOptions
     /// <summary>Path to the ffmpeg executable, or just <c>ffmpeg</c> to use PATH.</summary>
     public string Path { get; set; } = "ffmpeg";
 
-    /// <summary>H.264 encoder: <c>libx264</c>, <c>h264_videotoolbox</c>, <c>h264_nvenc</c>, <c>h264_qsv</c> or <c>h264_vaapi</c>.</summary>
+    /// <summary>
+    /// H.264 encoder: <c>libx264</c>, <c>h264_videotoolbox</c>, <c>h264_nvenc</c>, <c>h264_qsv</c>, <c>h264_amf</c>
+    /// or <c>h264_vaapi</c> get tuned low-latency settings; any other encoder name is passed through as-is.
+    /// </summary>
     public string VideoEncoder { get; set; } = "libx264";
 
     /// <summary>Extra encoder arguments appended after the defaults (space separated).</summary>

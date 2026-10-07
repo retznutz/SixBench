@@ -53,12 +53,20 @@ public static class FfmpegArgsBuilder
                 args.AddRange(["-c:v", "h264_qsv", "-preset", "veryfast", "-profile:v", "baseline",
                     "-pix_fmt", "nv12"]);
                 break;
+            case "h264_amf":
+                args.AddRange(["-c:v", "h264_amf", "-usage", "ultralowlatency", "-quality", "speed",
+                    "-profile:v", "constrained_baseline", "-pix_fmt", "nv12"]);
+                break;
             case "h264_vaapi":
                 args.AddRange(["-vf", "format=nv12,hwupload", "-c:v", "h264_vaapi", "-profile:v", "constrained_baseline"]);
                 break;
-            default:
+            case "libx264":
                 args.AddRange(["-c:v", "libx264", "-preset", "ultrafast", "-tune", "zerolatency",
                     "-profile:v", "baseline", "-pix_fmt", "yuv420p", "-sc_threshold", "0"]);
+                break;
+            default:
+                // Any other H.264 encoder (e.g. h264_mf): pass it through; tune it with ExtraEncoderArgs.
+                args.AddRange(["-c:v", encoder, "-pix_fmt", "yuv420p"]);
                 break;
         }
 
