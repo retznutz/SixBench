@@ -65,6 +65,25 @@ public class DeviceListParsersTests
     }
 
     [Fact]
+    public void Parses_dshow_output_from_newer_ffmpeg_with_input_prefix()
+    {
+        // ffmpeg 7.1+ on Windows with an Elgato Cam Link 4K.
+        const string stderr = """
+            [in#0 @ 000002047003c000] "Cam Link 4K" (video)
+            [in#0 @ 000002047003c000]   Alternative name "@device_pnp_\\?\usb#vid_0fd9&pid_00a1&mi_00#6&cfd9bc5&0&0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global"
+            [in#0 @ 000002047003c000] Could not enumerate audio only devices (or none found).
+            Error opening input file dummy.
+            """;
+
+        var (video, audio) = DeviceListParsers.ParseDirectShow(stderr);
+
+        var v = Assert.Single(video);
+        Assert.Equal("Cam Link 4K", v.Name);
+        Assert.StartsWith("@device_pnp_", v.AlternativeName);
+        Assert.Empty(audio);
+    }
+
+    [Fact]
     public void Parses_dshow_section_format()
     {
         const string stderr = """

@@ -1,0 +1,233 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SixBench.Api</name>
+    </assembly>
+    <members>
+        <member name="T:SixBench.Api.Controllers.CaptureDevicesController">
+            <summary>
+            HDMI capture encoders attached to the host.
+            </summary>
+            <param name="devices">Capture device service.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.CaptureDevicesController.#ctor(SixBench.Services.Capture.ICaptureDeviceService)">
+            <summary>
+            HDMI capture encoders attached to the host.
+            </summary>
+            <param name="devices">Capture device service.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.CaptureDevicesController.List(System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Lists detected encoders, merged with saved links. Saved encoders that are unplugged are included with <c>isConnected=false</c>.
+            </summary>
+            <param name="refresh">Re-enumerate devices instead of using the 5-second cache.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The encoders.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.CaptureDevicesController.ListAudioInputs(System.Threading.CancellationToken)">
+            <summary>
+            Lists the host's audio capture devices, for choosing an encoder's audio input.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>Audio inputs.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.CaptureDevicesController.Get(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets one encoder.
+            </summary>
+            <param name="id">Device id (from the list response).</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The encoder.</returns>
+        </member>
+        <member name="T:SixBench.Api.Controllers.EncoderLinksController">
+            <summary>
+            Saved encoder settings and the Roku each encoder is connected to.
+            </summary>
+            <param name="links">Link service.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.EncoderLinksController.#ctor(SixBench.Services.Links.IEncoderLinkService)">
+            <summary>
+            Saved encoder settings and the Roku each encoder is connected to.
+            </summary>
+            <param name="links">Link service.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.EncoderLinksController.List(System.Threading.CancellationToken)">
+            <summary>
+            Lists all saved links.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The links.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.EncoderLinksController.Get(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets the link for an encoder.
+            </summary>
+            <param name="id">Capture device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The link.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.EncoderLinksController.Upsert(System.String,SixBench.Common.Dtos.UpsertEncoderLinkRequest,System.Threading.CancellationToken)">
+            <summary>
+            Creates or updates the link for an encoder. Active streams restart to apply new capture settings.
+            </summary>
+            <param name="id">Capture device id.</param>
+            <param name="request">Link settings.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The saved link.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.EncoderLinksController.Delete(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Deletes the link for an encoder.
+            </summary>
+            <param name="id">Capture device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>204 when deleted, 404 when no link existed.</returns>
+        </member>
+        <member name="T:SixBench.Api.Controllers.RokuDevicesController">
+            <summary>
+            Roku devices: discovery, manual registration and remote control.
+            </summary>
+            <param name="devices">Roku device service.</param>
+            <param name="control">Roku control service.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.#ctor(SixBench.Services.Roku.IRokuDeviceService,SixBench.Services.Roku.IRokuControlService)">
+            <summary>
+            Roku devices: discovery, manual registration and remote control.
+            </summary>
+            <param name="devices">Roku device service.</param>
+            <param name="control">Roku control service.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.List(System.Threading.CancellationToken)">
+            <summary>
+            Lists saved Roku devices.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The devices.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.Get(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Gets a saved Roku device.
+            </summary>
+            <param name="id">Device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The device.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.Discover(System.Threading.CancellationToken)">
+            <summary>
+            Searches the LAN for Roku devices (SSDP, a few seconds) and saves what it finds.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The devices found.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.Add(SixBench.Common.Dtos.AddRokuRequest,System.Threading.CancellationToken)">
+            <summary>
+            Adds a Roku by IP address after checking that it responds.
+            </summary>
+            <param name="request">Host and optional port.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The saved device.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.Delete(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Deletes a saved Roku; encoders linked to it become unlinked.
+            </summary>
+            <param name="id">Device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>204 when deleted.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.SendKey(System.Int32,SixBench.Common.Dtos.KeyCommandRequest,System.Threading.CancellationToken)">
+            <summary>
+            Sends a remote-control key.
+            </summary>
+            <param name="id">Device id.</param>
+            <param name="request">Key and action.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>204 when sent.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.RokuDevicesController.SendText(System.Int32,SixBench.Common.Dtos.TextInputRequest,System.Threading.CancellationToken)">
+            <summary>
+            Types text into the Roku's on-screen keyboard.
+            </summary>
+            <param name="id">Device id.</param>
+            <param name="request">The text.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>204 when sent.</returns>
+        </member>
+        <member name="T:SixBench.Api.Controllers.StreamsController">
+            <summary>
+            Live capture streams: the WebSocket endpoint and diagnostics.
+            </summary>
+            <param name="sessions">Session manager.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.StreamsController.#ctor(SixBench.Services.Streaming.ICaptureSessionManager)">
+            <summary>
+            Live capture streams: the WebSocket endpoint and diagnostics.
+            </summary>
+            <param name="sessions">Session manager.</param>
+        </member>
+        <member name="M:SixBench.Api.Controllers.StreamsController.List">
+            <summary>
+            Lists active capture sessions with per-client stats.
+            </summary>
+            <returns>Active sessions.</returns>
+        </member>
+        <member name="M:SixBench.Api.Controllers.StreamsController.Connect(System.String,SixBench.Services.Streaming.IStreamSocketHandler)">
+            <summary>
+            WebSocket endpoint that streams an encoder. Not callable from Swagger; see the README for the protocol.
+            </summary>
+            <param name="id">Capture device id.</param>
+            <param name="handler">Socket handler.</param>
+            <returns>Nothing once the socket closes; 400 when the request is not a WebSocket upgrade.</returns>
+        </member>
+        <member name="T:SixBench.Api.Infrastructure.ApiExceptionHandler">
+            <summary>
+            Maps service exceptions to RFC 7807 problem responses.
+            </summary>
+            <param name="problemDetails">Problem details writer.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.ApiExceptionHandler.#ctor(Microsoft.AspNetCore.Http.IProblemDetailsService,Microsoft.Extensions.Logging.ILogger{SixBench.Api.Infrastructure.ApiExceptionHandler})">
+            <summary>
+            Maps service exceptions to RFC 7807 problem responses.
+            </summary>
+            <param name="problemDetails">Problem details writer.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.ApiExceptionHandler.TryHandleAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Api.Infrastructure.ConfigureSwaggerOptions">
+            <summary>
+            Creates one Swagger document per API version.
+            </summary>
+            <param name="provider">API version description provider.</param>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.ConfigureSwaggerOptions.#ctor(Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
+            <summary>
+            Creates one Swagger document per API version.
+            </summary>
+            <param name="provider">API version description provider.</param>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.ConfigureSwaggerOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Api.Infrastructure.RouteKeys">
+            <summary>
+            Helpers for decoding route keys.
+            </summary>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.RouteKeys.ToStableId(System.String)">
+            <summary>
+            Decodes a capture-device route key to its stable id.
+            </summary>
+            <param name="id">The base64url route key.</param>
+            <returns>The stable id.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.ServiceValidationException">The key is malformed.</exception>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Entry point (exposed for integration tests).
+            </summary>
+        </member>
+    </members>
+</doc>

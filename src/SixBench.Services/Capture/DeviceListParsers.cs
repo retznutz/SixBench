@@ -191,7 +191,8 @@ public static partial class DeviceListParsers
     [GeneratedRegex(@"\]\s*\[(?<index>\d+)\]\s+(?<name>.+)$")]
     private static partial Regex AvFoundationDeviceLine();
 
-    [GeneratedRegex("^\\[dshow @ [^\\]]+\\]\\s+\"(?<name>[^\"]+)\"(?:\\s+\\((?<kind>video|audio|none)\\))?\\s*$")]
+    // The line prefix varies by ffmpeg version: "[dshow @ 0x…]" (≤ 7.0) or "[in#0 @ 0x…]" (7.1+).
+    [GeneratedRegex("^\\[[^\\]]+ @ [^\\]]+\\]\\s+\"(?<name>[^\"]+)\"(?:\\s+\\((?<kind>video|audio|none)\\))?\\s*$")]
     private static partial Regex DshowDeviceLine();
 
     [GeneratedRegex("Alternative name\\s+\"(?<alt>[^\"]+)\"")]
