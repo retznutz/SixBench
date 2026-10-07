@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+TestResults/
+*.db
+*.db-shm
+*.db-wal
+src/SixBench.Api/data/
+src/SixBench.Api/logs/
+src/SixBench.Api/wwwroot/
+
+# Node / Nuxt
+node_modules/
+web/.nuxt/
+web/.output/
+web/.data/
+web/dist/
+web/.cache/
