@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The Nuxt app; generated into wwwroot on publish. -->
+    <WebAppRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', 'web'))</WebAppRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +24,22 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
   </ItemGroup>
+
+  <!--
+    On publish, build the Nuxt SPA (static output) and publish it as wwwroot.
+    Skip with -p:SkipWeb=true (e.g. when the frontend is deployed separately).
+  -->
+  <Target Name="PublishWebApp" AfterTargets="ComputeFilesToPublish" Condition="'$(SkipWeb)' != 'true'">
+    <Exec WorkingDirectory="$(WebAppRoot)" Command="npm ci" />
+    <Exec WorkingDirectory="$(WebAppRoot)" Command="npm run generate" />
+    <ItemGroup>
+      <WebAppDist Include="$(WebAppRoot).output/public/**" />
+      <ResolvedFileToPublish Include="@(WebAppDist->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot/%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>
