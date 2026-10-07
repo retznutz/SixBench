@@ -19,7 +19,9 @@ public sealed class ApiExceptionHandler(IProblemDetailsService problemDetails, I
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             ServiceValidationException => (StatusCodes.Status400BadRequest, "Invalid request"),
+            FieldValidationException => (StatusCodes.Status400BadRequest, "Invalid request"),
             RokuUnreachableException => (StatusCodes.Status502BadGateway, "Roku unreachable"),
+            CertificateRequestException => (StatusCodes.Status502BadGateway, "Certificate request failed"),
             OperationCanceledException when httpContext.RequestAborted.IsCancellationRequested => (499, "Client closed request"),
             _ => (StatusCodes.Status500InternalServerError, "Unexpected error"),
         };
@@ -38,12 +40,14 @@ public sealed class ApiExceptionHandler(IProblemDetailsService problemDetails, I
         {
             HttpContext = httpContext,
             Exception = exception,
-            ProblemDetails = new ProblemDetails
-            {
-                Status = status,
-                Title = title,
-                Detail = status == StatusCodes.Status500InternalServerError ? "An unexpected error occurred." : exception.Message,
-            },
+            ProblemDetails = exception is FieldValidationException fields
+                ? new ValidationProblemDetails(fields.Errors.ToDictionary(e => e.Key, e => e.Value)) { Status = status, Title = title }
+                : new ProblemDetails
+                {
+                    Status = status,
+                    Title = title,
+                    Detail = status == StatusCodes.Status500InternalServerError ? "An unexpected error occurred." : exception.Message,
+                },
         });
     }
 }

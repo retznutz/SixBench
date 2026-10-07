@@ -35,6 +35,7 @@ public static class DataServiceCollectionExtensions
         services.AddDbContext<SixBenchDbContext>(o => o.UseSqlite(connectionString));
         services.AddScoped<IRokuDeviceRepository, RokuDeviceRepository>();
         services.AddScoped<IEncoderLinkRepository, EncoderLinkRepository>();
+        services.AddScoped<ITlsSettingRepository, TlsSettingRepository>();
         return services;
     }
 

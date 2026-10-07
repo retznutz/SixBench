@@ -10,6 +10,7 @@ const devices = useCaptureDevicesStore()
 const rokus = useRokuDevicesStore()
 const toast = useToast()
 const confirm = useConfirm()
+const auth = useAuthStore()
 
 const manualHost = ref('')
 const manualPort = ref<number | null>(null)
@@ -184,6 +185,17 @@ function formatSeen(iso: string) {
       >
         No capture devices detected.
       </p>
+    </section>
+
+    <section v-if="auth.isAdmin" class="space-y-4" aria-labelledby="certificate-heading">
+      <div>
+        <h2 id="certificate-heading" class="text-lg font-medium">Domain and Certificate Setup</h2>
+        <p class="text-sm text-zinc-400">
+          Configure your custom domain and get a free trusted SSL certificate through DNS verification. Browsers on
+          other machines only decode video over HTTPS.
+        </p>
+      </div>
+      <LazyCertificateSetup />
     </section>
 
     <LazyRokuLinkDialog v-model:visible="dialogOpen" :device="editing" />

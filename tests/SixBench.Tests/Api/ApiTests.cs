@@ -13,11 +13,24 @@ using SixBench.Services.Ffmpeg;
 
 namespace SixBench.Tests.Api;
 
-public sealed class ApiTests : IClassFixture<ApiTests.Factory>
+[Collection(ApiCollection.Name)]
+public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.Factory>, IAsyncLifetime
 {
-    private readonly HttpClient _client;
+    private HttpClient _client = null!;
 
-    public ApiTests(Factory factory) => _client = factory.CreateClient();
+    public async Task InitializeAsync() => _client = await factory.SignInAsync();
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task Requires_sign_in_except_health()
+    {
+        var anonymous = factory.CreateClient();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/roku-devices")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/auth/me")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await anonymous.GetAsync("/health")).StatusCode);
+    }
 
     [Fact]
     public async Task Health_is_ok()
@@ -83,12 +96,13 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
 
     public sealed class Factory : WebApplicationFactory<Program>
     {
-        private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"sixbench-api-{Guid.NewGuid():N}.db");
+        private readonly string _root = Directory.CreateTempSubdirectory("sixbench-api-").FullName;
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Testing");
-            builder.UseSetting("ConnectionStrings:SixBench", $"Data Source={_dbPath}");
+            builder.UseSetting("ConnectionStrings:SixBench", $"Data Source={Path.Combine(_root, "test.db")}");
+            TestAuth.Configure(builder, _root);
             builder.UseSetting("Serilog:WriteTo:1:Name", "Console");
             builder.ConfigureTestServices(services =>
             {
@@ -103,7 +117,7 @@ public sealed class ApiTests : IClassFixture<ApiTests.Factory>
         {
             base.Dispose(disposing);
             Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-            File.Delete(_dbPath);
+            Directory.Delete(_root, recursive: true);
         }
     }
 

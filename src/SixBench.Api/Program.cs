@@ -4,12 +4,17 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
+using SixBench.Api.Hubs;
 using SixBench.Api.Infrastructure;
 using SixBench.Data;
 using SixBench.Services;
+using SixBench.Services.Users;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
+
+// After "Restart Now" in the web app, wait for the previous process to release the port.
+ServerRestarter.WaitForPreviousProcess();
 
 try
 {
@@ -33,6 +38,12 @@ try
 
     builder.Services.AddSixBenchData(builder.Configuration, builder.Environment.ContentRootPath);
     builder.Services.AddSixBenchServices(builder.Configuration);
+    builder.Services.AddSixBenchAuthentication(builder.Configuration, builder.Environment.ContentRootPath);
+
+    // Listen on Server:Port: HTTPS when TLS is enabled and a certificate exists (Let's Encrypt, set up in Settings).
+    var tlsRuntime = builder.ConfigureTls();
+    builder.Services.AddSingleton<ServerRestarter>();
+    builder.Services.AddSignalR();
 
     builder.Services
         .AddControllers()
@@ -67,6 +78,7 @@ try
     await using (var scope = app.Services.CreateAsyncScope())
     {
         await scope.ServiceProvider.GetRequiredService<SixBenchDbContext>().Database.MigrateAsync();
+        await IdentitySeeder.SeedAsync(scope.ServiceProvider);
     }
 
     app.UseExceptionHandler();
@@ -82,9 +94,15 @@ try
     {
         app.UseCors("dev");
     }
-    else
+
+    // Only redirect to HTTPS when the server is actually serving it.
+    if (tlsRuntime.HttpsEnabled)
     {
-        app.UseHsts();
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseHsts();
+        }
+
         app.UseHttpsRedirection();
     }
 
@@ -101,14 +119,19 @@ try
     app.UseDefaultFiles();
     app.UseStaticFiles();
 
-    app.MapControllers();
-    app.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = HealthResponseWriter.WriteAsync });
+    // Every endpoint requires a signed-in user unless marked anonymous (see AuthenticationSetup).
+    app.UseAuthentication();
+    app.UseAuthorization();
 
-    // SPA fallback for client-side routes; unknown API paths stay 404.
-    app.MapFallback("api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found"));
+    app.MapControllers();
+    app.MapHub<CertificateHub>(CertificateHub.Path);
+    app.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = HealthResponseWriter.WriteAsync }).AllowAnonymous();
+
+    // SPA fallback for client-side routes (the app shows its own login page); unknown API paths stay 404.
+    app.MapFallback("api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: "Not found")).AllowAnonymous();
     if (File.Exists(Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html")))
     {
-        app.MapFallbackToFile("index.html");
+        app.MapFallbackToFile("index.html").AllowAnonymous();
     }
 
     await app.RunAsync();

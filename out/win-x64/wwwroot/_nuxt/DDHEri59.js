@@ -1,1 +1,0 @@
-import{W as e,Z as t,o as n}from"./Cxvj1CVF.js";function r(){t({variableName:n(`scrollbar.width`).name})}function i(){e({variableName:n(`scrollbar.width`).name})}export{i as n,r as t};

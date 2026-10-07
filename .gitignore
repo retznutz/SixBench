@@ -27,3 +27,5 @@ web/.cache/
 
 # dotnet-ef build host artifacts (backslash dir names on macOS/Linux)
 **/bin\\*
+/out
+/out

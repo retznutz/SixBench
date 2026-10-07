@@ -5,10 +5,13 @@ using SixBench.Common.Enums;
 using SixBench.Common.Options;
 using SixBench.Services.Capture;
 using SixBench.Services.Ffmpeg;
+using SixBench.Services.Certificates;
+using SixBench.Services.Certificates.Providers;
 using SixBench.Services.Links;
 using SixBench.Services.Processes;
 using SixBench.Services.Roku;
 using SixBench.Services.Streaming;
+using SixBench.Services.Users;
 
 namespace SixBench.Services;
 
@@ -35,6 +38,16 @@ public static class ServiceCollectionExtensions
         services.AddOptions<AudioOptions>().Bind(configuration.GetSection(AudioOptions.SectionName)).ValidateOnStart();
         services.AddOptions<RokuOptions>().Bind(configuration.GetSection(RokuOptions.SectionName))
             .Validate(o => o.DiscoveryTimeoutMs is > 0 and <= 30000, "Roku:DiscoveryTimeoutMs must be 1-30000.")
+            .ValidateOnStart();
+        services.AddOptions<ServerOptions>().Bind(configuration.GetSection(ServerOptions.SectionName))
+            .Validate(o => o.Port is > 0 and <= 65535, "Server:Port must be 1-65535.")
+            .ValidateOnStart();
+        services.AddOptions<TlsOptions>().Bind(configuration.GetSection(TlsOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.CertificateDirectory), "Tls:CertificateDirectory is required.")
+            .Validate(o => o.ValidationTimeoutSeconds is >= 10 and <= 600, "Tls:ValidationTimeoutSeconds must be 10-600.")
+            .ValidateOnStart();
+        services.AddOptions<SeedAdminOptions>().Bind(configuration.GetSection(SeedAdminOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.UserName), "Identity:SeedAdmin:UserName is required.")
             .ValidateOnStart();
 
         services.AddSingleton(TimeProvider.System);
@@ -79,6 +92,26 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IRokuDiscoveryService, RokuDiscoveryService>();
         services.AddScoped<IRokuDeviceService, RokuDeviceService>();
         services.AddScoped<IRokuControlService, RokuControlService>();
+
+        // Users
+        services.AddScoped<IUserService, UserService>();
+
+        // Certificates (Let's Encrypt via DNS provider APIs)
+        services.AddHttpClient();
+        services.AddSingleton<IDnsChallengeProvider, CloudflareDnsProvider>();
+        services.AddSingleton<IDnsChallengeProvider, DuckDnsDnsProvider>();
+        services.AddSingleton<IDnsChallengeProvider, Route53DnsProvider>();
+        services.AddSingleton<IDnsChallengeProvider, DigitalOceanDnsProvider>();
+        services.AddSingleton<IDnsChallengeProvider, GoDaddyDnsProvider>();
+        services.AddSingleton<DnsProviderFactory>();
+        services.AddSingleton<IDnsCredentialProtector, DnsCredentialProtector>();
+        services.AddSingleton<IDnsTxtChecker, DnsTxtChecker>();
+        services.AddSingleton<IAcmeClient, CertesAcmeClient>();
+        services.AddSingleton<CertificateService>();
+        services.AddScoped<CertificateSetupService>();
+        services.AddScoped<ITlsSettingsService, TlsSettingsService>();
+        services.AddSingleton<CertificateRenewalBackgroundService>();
+        services.AddHostedService(sp => sp.GetRequiredService<CertificateRenewalBackgroundService>());
 
         return services;
     }

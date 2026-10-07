@@ -1,10 +1,17 @@
 <script setup lang="ts">
 const route = useRoute()
+const auth = useAuthStore()
 
-const links = [
+const links = computed(() => [
   { to: '/', label: 'Encoders', icon: 'pi pi-video' },
   { to: '/settings', label: 'Settings', icon: 'pi pi-cog' },
-]
+  ...(auth.isAdmin ? [{ to: '/users', label: 'Users', icon: 'pi pi-users' }] : []),
+])
+
+async function signOut() {
+  await auth.logout()
+  await navigateTo('/login')
+}
 
 function isActive(to: string) {
   return to === '/' ? route.path === '/' || route.path.startsWith('/watch') : route.path.startsWith(to)
@@ -35,6 +42,27 @@ function isActive(to: string) {
             <i :class="link.icon" aria-hidden="true" />
             <span class="hidden sm:inline">{{ link.label }}</span>
           </NuxtLink>
+          <NuxtLink
+            to="/account"
+            class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
+            :class="
+              isActive('/account') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100'
+            "
+            :aria-current="isActive('/account') ? 'page' : undefined"
+            :title="`Signed in as ${auth.user?.userName}`"
+          >
+            <i class="pi pi-user" aria-hidden="true" />
+            <span class="hidden max-w-32 truncate md:inline">{{ auth.user?.userName }}</span>
+          </NuxtLink>
+          <Button
+            icon="pi pi-sign-out"
+            text
+            rounded
+            severity="secondary"
+            aria-label="Sign out"
+            title="Sign out"
+            @click="signOut"
+          />
         </nav>
       </div>
     </header>
