@@ -1,0 +1,268 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SixBench.Data</name>
+    </assembly>
+    <members>
+        <member name="T:SixBench.Data.DataServiceCollectionExtensions">
+            <summary>
+            Registers the SixBench data layer.
+            </summary>
+        </member>
+        <member name="F:SixBench.Data.DataServiceCollectionExtensions.ConnectionStringName">
+            <summary>Name of the connection string in configuration.</summary>
+        </member>
+        <member name="M:SixBench.Data.DataServiceCollectionExtensions.AddSixBenchData(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.String)">
+            <summary>
+            Adds the <see cref="T:SixBench.Data.SixBenchDbContext"/> (SQLite) and repositories.
+            A relative SQLite path is resolved against <paramref name="contentRoot"/> and its directory is created.
+            </summary>
+            <param name="services">The service collection.</param>
+            <param name="configuration">App configuration containing <c>ConnectionStrings:SixBench</c>.</param>
+            <param name="contentRoot">Base directory for relative database paths.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:SixBench.Data.DataServiceCollectionExtensions.ResolveConnectionString(System.String,System.String)">
+            <summary>
+            Makes the SQLite data source absolute (forward slashes) and ensures its directory exists.
+            In-memory data sources are returned unchanged.
+            </summary>
+            <param name="connectionString">The configured connection string.</param>
+            <param name="contentRoot">Base directory for relative paths.</param>
+            <returns>The resolved connection string.</returns>
+        </member>
+        <member name="T:SixBench.Data.DesignTimeDbContextFactory">
+            <summary>
+            Lets <c>dotnet ef</c> create the context without starting the API.
+            </summary>
+        </member>
+        <member name="M:SixBench.Data.DesignTimeDbContextFactory.CreateDbContext(System.String[])">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Data.Entities.EncoderLink">
+            <summary>
+            Associates an HDMI capture encoder with the Roku plugged into it, plus per-device capture settings.
+            </summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.Id">
+            <summary>Primary key.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.CaptureDeviceStableId">
+            <summary>Stable identifier of the capture device (unique).</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.DisplayName">
+            <summary>Friendly name chosen by the user.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.VideoInput">
+            <summary>ffmpeg video input specifier.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.AudioInput">
+            <summary>ffmpeg audio input specifier; null uses automatic pairing.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.RokuDeviceId">
+            <summary>Foreign key to the linked Roku.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.RokuDevice">
+            <summary>The linked Roku.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.AllowDeviceAudio">
+            <summary>Whether device audio may be streamed to browsers.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.FrameRate">
+            <summary>Capture frame rate override.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.VideoSize">
+            <summary>Capture size override, e.g. <c>1920x1080</c>.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.PixelFormat">
+            <summary>Capture pixel format override.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.CreatedUtc">
+            <summary>When the link was created.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.EncoderLink.UpdatedUtc">
+            <summary>When the link was last modified.</summary>
+        </member>
+        <member name="T:SixBench.Data.Entities.RokuDevice">
+            <summary>
+            A Roku device, either discovered via SSDP or added manually by IP.
+            </summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.Id">
+            <summary>Primary key.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.SerialNumber">
+            <summary>Roku serial number (unique; survives IP changes).</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.FriendlyName">
+            <summary>User-visible device name.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.Model">
+            <summary>Model name.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.IpAddress">
+            <summary>Last known IP address or host name.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.Port">
+            <summary>ECP port.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.IsManual">
+            <summary>True if added by IP rather than discovered.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.LastSeenUtc">
+            <summary>When the device last responded.</summary>
+        </member>
+        <member name="P:SixBench.Data.Entities.RokuDevice.EncoderLinks">
+            <summary>Encoders linked to this Roku.</summary>
+        </member>
+        <member name="T:SixBench.Data.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Data.Repositories.EncoderLinkRepository">
+            <summary>
+            EF Core implementation of <see cref="T:SixBench.Data.Repositories.IEncoderLinkRepository"/>.
+            </summary>
+            <param name="db">The database context.</param>
+        </member>
+        <member name="M:SixBench.Data.Repositories.EncoderLinkRepository.#ctor(SixBench.Data.SixBenchDbContext)">
+            <summary>
+            EF Core implementation of <see cref="T:SixBench.Data.Repositories.IEncoderLinkRepository"/>.
+            </summary>
+            <param name="db">The database context.</param>
+        </member>
+        <member name="M:SixBench.Data.Repositories.EncoderLinkRepository.ListAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.EncoderLinkRepository.GetByStableIdAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.EncoderLinkRepository.SaveAsync(SixBench.Data.Entities.EncoderLink,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.EncoderLinkRepository.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Data.Repositories.IEncoderLinkRepository">
+            <summary>
+            Persistence for <see cref="T:SixBench.Data.Entities.EncoderLink"/>.
+            </summary>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IEncoderLinkRepository.ListAsync(System.Threading.CancellationToken)">
+            <summary>Lists all links, including their Roku.</summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>All links.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IEncoderLinkRepository.GetByStableIdAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Gets a link by capture-device stable id, including its Roku.</summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The link, or null.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IEncoderLinkRepository.SaveAsync(SixBench.Data.Entities.EncoderLink,System.Threading.CancellationToken)">
+            <summary>Saves a new or modified link and stamps timestamps.</summary>
+            <param name="link">The link (tracked or new).</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The saved link.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IEncoderLinkRepository.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Deletes a link by capture-device stable id.</summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>True if a link was deleted.</returns>
+        </member>
+        <member name="T:SixBench.Data.Repositories.IRokuDeviceRepository">
+            <summary>
+            Persistence for <see cref="T:SixBench.Data.Entities.RokuDevice"/>.
+            </summary>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IRokuDeviceRepository.ListAsync(System.Threading.CancellationToken)">
+            <summary>Lists all devices ordered by name.</summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>All known devices.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IRokuDeviceRepository.GetAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Gets a device by id.</summary>
+            <param name="id">Device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The device, or null.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IRokuDeviceRepository.GetBySerialAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Gets a device by serial number.</summary>
+            <param name="serialNumber">Roku serial number.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The device, or null.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IRokuDeviceRepository.UpsertBySerialAsync(SixBench.Data.Entities.RokuDevice,System.Threading.CancellationToken)">
+            <summary>
+            Inserts a new device or updates the existing one with the same serial number.
+            <see cref="P:SixBench.Data.Entities.RokuDevice.IsManual"/> is only ever cleared on insert, never by a later discovery.
+            </summary>
+            <param name="device">Device values.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The saved device.</returns>
+        </member>
+        <member name="M:SixBench.Data.Repositories.IRokuDeviceRepository.DeleteAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Deletes a device; links to it are set to null.</summary>
+            <param name="id">Device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>True if a device was deleted.</returns>
+        </member>
+        <member name="T:SixBench.Data.Repositories.RokuDeviceRepository">
+            <summary>
+            EF Core implementation of <see cref="T:SixBench.Data.Repositories.IRokuDeviceRepository"/>.
+            </summary>
+            <param name="db">The database context.</param>
+        </member>
+        <member name="M:SixBench.Data.Repositories.RokuDeviceRepository.#ctor(SixBench.Data.SixBenchDbContext)">
+            <summary>
+            EF Core implementation of <see cref="T:SixBench.Data.Repositories.IRokuDeviceRepository"/>.
+            </summary>
+            <param name="db">The database context.</param>
+        </member>
+        <member name="M:SixBench.Data.Repositories.RokuDeviceRepository.ListAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.RokuDeviceRepository.GetAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.RokuDeviceRepository.GetBySerialAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.RokuDeviceRepository.UpsertBySerialAsync(SixBench.Data.Entities.RokuDevice,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Data.Repositories.RokuDeviceRepository.DeleteAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Data.SixBenchDbContext">
+            <summary>
+            EF Core context for SixBench. Table names are singular.
+            </summary>
+            <param name="options">Context options.</param>
+        </member>
+        <member name="M:SixBench.Data.SixBenchDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{SixBench.Data.SixBenchDbContext})">
+            <summary>
+            EF Core context for SixBench. Table names are singular.
+            </summary>
+            <param name="options">Context options.</param>
+        </member>
+        <member name="P:SixBench.Data.SixBenchDbContext.RokuDevices">
+            <summary>Known Roku devices.</summary>
+        </member>
+        <member name="P:SixBench.Data.SixBenchDbContext.EncoderLinks">
+            <summary>Encoder-to-Roku links.</summary>
+        </member>
+        <member name="M:SixBench.Data.SixBenchDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

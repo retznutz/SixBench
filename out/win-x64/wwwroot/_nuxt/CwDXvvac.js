@@ -1,0 +1,1 @@
+import{t as e}from"./B3pJstLp.js";var t={name:`InputSwitch`,extends:e,mounted:function(){console.warn(`Deprecated since v4. Use ToggleSwitch component instead.`)}};export{t as default};

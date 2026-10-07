@@ -1,0 +1,761 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SixBench.Common</name>
+    </assembly>
+    <members>
+        <member name="T:SixBench.Common.Dtos.AddRokuRequest">
+            <summary>
+            Request body to add a Roku manually by IP address.
+            </summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.AddRokuRequest.Host">
+            <summary>IPv4 address or host name of the Roku.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.AddRokuRequest.Port">
+            <summary>ECP port; defaults to 8060.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.AudioInputDto">
+            <summary>
+            An audio capture device that can be assigned to an encoder.
+            </summary>
+            <param name="Name">Device name.</param>
+            <param name="Input">ffmpeg input specifier.</param>
+        </member>
+        <member name="M:SixBench.Common.Dtos.AudioInputDto.#ctor(System.String,System.String)">
+            <summary>
+            An audio capture device that can be assigned to an encoder.
+            </summary>
+            <param name="Name">Device name.</param>
+            <param name="Input">ffmpeg input specifier.</param>
+        </member>
+        <member name="P:SixBench.Common.Dtos.AudioInputDto.Name">
+            <summary>Device name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.AudioInputDto.Input">
+            <summary>ffmpeg input specifier.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.CaptureDeviceDto">
+            <summary>
+            An HDMI-to-USB capture encoder detected on the host.
+            </summary>
+            <param name="Id">URL-safe key for this device (base64url of <paramref name="StableId"/>); use it in routes.</param>
+            <param name="StableId">An identifier that survives reboots and re-plugging (used as the key for links).</param>
+            <param name="Name">Human-readable device name reported by the OS.</param>
+            <param name="VideoInput">The ffmpeg input specifier for the video device.</param>
+            <param name="AudioInput">The ffmpeg input specifier for the paired audio device, if any.</param>
+            <param name="Platform">The capture backend platform.</param>
+            <param name="IsConnected">Whether the device is currently attached (false for saved links whose device is missing).</param>
+            <param name="Link">The saved encoder-to-Roku link, if one exists.</param>
+        </member>
+        <member name="M:SixBench.Common.Dtos.CaptureDeviceDto.#ctor(System.String,System.String,System.String,System.String,System.String,SixBench.Common.Enums.HostPlatform,System.Boolean,SixBench.Common.Dtos.EncoderLinkDto)">
+            <summary>
+            An HDMI-to-USB capture encoder detected on the host.
+            </summary>
+            <param name="Id">URL-safe key for this device (base64url of <paramref name="StableId"/>); use it in routes.</param>
+            <param name="StableId">An identifier that survives reboots and re-plugging (used as the key for links).</param>
+            <param name="Name">Human-readable device name reported by the OS.</param>
+            <param name="VideoInput">The ffmpeg input specifier for the video device.</param>
+            <param name="AudioInput">The ffmpeg input specifier for the paired audio device, if any.</param>
+            <param name="Platform">The capture backend platform.</param>
+            <param name="IsConnected">Whether the device is currently attached (false for saved links whose device is missing).</param>
+            <param name="Link">The saved encoder-to-Roku link, if one exists.</param>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.Id">
+            <summary>URL-safe key for this device (base64url of <paramref name="StableId"/>); use it in routes.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.StableId">
+            <summary>An identifier that survives reboots and re-plugging (used as the key for links).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.Name">
+            <summary>Human-readable device name reported by the OS.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.VideoInput">
+            <summary>The ffmpeg input specifier for the video device.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.AudioInput">
+            <summary>The ffmpeg input specifier for the paired audio device, if any.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.Platform">
+            <summary>The capture backend platform.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.IsConnected">
+            <summary>Whether the device is currently attached (false for saved links whose device is missing).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.CaptureDeviceDto.Link">
+            <summary>The saved encoder-to-Roku link, if one exists.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.EncoderLinkDto">
+            <summary>
+            The saved association between a capture encoder and the Roku plugged into it, plus capture settings.
+            </summary>
+            <param name="Id">Database identifier.</param>
+            <param name="CaptureDeviceStableId">Stable id of the capture device.</param>
+            <param name="DisplayName">Friendly name chosen by the user.</param>
+            <param name="VideoInput">ffmpeg video input specifier.</param>
+            <param name="AudioInput">ffmpeg audio input specifier (overrides automatic pairing).</param>
+            <param name="RokuDeviceId">The linked Roku, if any.</param>
+            <param name="RokuDevice">The linked Roku details, if any.</param>
+            <param name="AllowDeviceAudio">Whether device audio may be streamed to browsers.</param>
+            <param name="FrameRate">Capture frame rate override.</param>
+            <param name="VideoSize">Capture size override, e.g. <c>1920x1080</c>.</param>
+            <param name="PixelFormat">Capture pixel format override, e.g. <c>uyvy422</c>.</param>
+            <param name="CreatedUtc">When the link was created.</param>
+            <param name="UpdatedUtc">When the link was last modified.</param>
+        </member>
+        <member name="M:SixBench.Common.Dtos.EncoderLinkDto.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},SixBench.Common.Dtos.RokuDeviceDto,System.Boolean,System.Nullable{System.Double},System.String,System.String,System.DateTime,System.DateTime)">
+            <summary>
+            The saved association between a capture encoder and the Roku plugged into it, plus capture settings.
+            </summary>
+            <param name="Id">Database identifier.</param>
+            <param name="CaptureDeviceStableId">Stable id of the capture device.</param>
+            <param name="DisplayName">Friendly name chosen by the user.</param>
+            <param name="VideoInput">ffmpeg video input specifier.</param>
+            <param name="AudioInput">ffmpeg audio input specifier (overrides automatic pairing).</param>
+            <param name="RokuDeviceId">The linked Roku, if any.</param>
+            <param name="RokuDevice">The linked Roku details, if any.</param>
+            <param name="AllowDeviceAudio">Whether device audio may be streamed to browsers.</param>
+            <param name="FrameRate">Capture frame rate override.</param>
+            <param name="VideoSize">Capture size override, e.g. <c>1920x1080</c>.</param>
+            <param name="PixelFormat">Capture pixel format override, e.g. <c>uyvy422</c>.</param>
+            <param name="CreatedUtc">When the link was created.</param>
+            <param name="UpdatedUtc">When the link was last modified.</param>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.Id">
+            <summary>Database identifier.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.CaptureDeviceStableId">
+            <summary>Stable id of the capture device.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.DisplayName">
+            <summary>Friendly name chosen by the user.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.VideoInput">
+            <summary>ffmpeg video input specifier.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.AudioInput">
+            <summary>ffmpeg audio input specifier (overrides automatic pairing).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.RokuDeviceId">
+            <summary>The linked Roku, if any.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.RokuDevice">
+            <summary>The linked Roku details, if any.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.AllowDeviceAudio">
+            <summary>Whether device audio may be streamed to browsers.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.FrameRate">
+            <summary>Capture frame rate override.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.VideoSize">
+            <summary>Capture size override, e.g. <c>1920x1080</c>.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.PixelFormat">
+            <summary>Capture pixel format override, e.g. <c>uyvy422</c>.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.CreatedUtc">
+            <summary>When the link was created.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.EncoderLinkDto.UpdatedUtc">
+            <summary>When the link was last modified.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.KeyCommandRequest">
+            <summary>
+            Request body to send a remote-control key to a Roku.
+            </summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.KeyCommandRequest.Key">
+            <summary>The key to send.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.KeyCommandRequest.Action">
+            <summary>Press (default), hold, or release.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.RokuDeviceDto">
+            <summary>
+            A Roku device known to the server.
+            </summary>
+            <param name="Id">Database identifier.</param>
+            <param name="SerialNumber">Roku serial number (unique).</param>
+            <param name="FriendlyName">User-visible device name.</param>
+            <param name="Model">Model name.</param>
+            <param name="IpAddress">Last known IP address.</param>
+            <param name="Port">ECP port (normally 8060).</param>
+            <param name="IsManual">True if the device was added by IP rather than discovered.</param>
+            <param name="LastSeenUtc">When the device last responded.</param>
+        </member>
+        <member name="M:SixBench.Common.Dtos.RokuDeviceDto.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Int32,System.Boolean,System.DateTime)">
+            <summary>
+            A Roku device known to the server.
+            </summary>
+            <param name="Id">Database identifier.</param>
+            <param name="SerialNumber">Roku serial number (unique).</param>
+            <param name="FriendlyName">User-visible device name.</param>
+            <param name="Model">Model name.</param>
+            <param name="IpAddress">Last known IP address.</param>
+            <param name="Port">ECP port (normally 8060).</param>
+            <param name="IsManual">True if the device was added by IP rather than discovered.</param>
+            <param name="LastSeenUtc">When the device last responded.</param>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.Id">
+            <summary>Database identifier.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.SerialNumber">
+            <summary>Roku serial number (unique).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.FriendlyName">
+            <summary>User-visible device name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.Model">
+            <summary>Model name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.IpAddress">
+            <summary>Last known IP address.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.Port">
+            <summary>ECP port (normally 8060).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.IsManual">
+            <summary>True if the device was added by IP rather than discovered.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.RokuDeviceDto.LastSeenUtc">
+            <summary>When the device last responded.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.StreamSessionDto">
+            <summary>
+            Diagnostics for an active capture session.
+            </summary>
+            <param name="Id">URL-safe device key.</param>
+            <param name="StableId">The capture device being streamed.</param>
+            <param name="StartedUtc">When ffmpeg was started.</param>
+            <param name="ClientCount">Number of connected browsers.</param>
+            <param name="AudioClientCount">Number of browsers receiving device audio.</param>
+            <param name="FramesOut">Total video access units produced.</param>
+            <param name="BytesOut">Total video bytes produced.</param>
+            <param name="AudioRunning">Whether the device-audio pipeline is running.</param>
+            <param name="Clients">Latest stats reported by each client.</param>
+        </member>
+        <member name="M:SixBench.Common.Dtos.StreamSessionDto.#ctor(System.String,System.String,System.DateTime,System.Int32,System.Int32,System.Int64,System.Int64,System.Boolean,System.Collections.Generic.IReadOnlyList{SixBench.Common.Dtos.ClientStatsDto})">
+            <summary>
+            Diagnostics for an active capture session.
+            </summary>
+            <param name="Id">URL-safe device key.</param>
+            <param name="StableId">The capture device being streamed.</param>
+            <param name="StartedUtc">When ffmpeg was started.</param>
+            <param name="ClientCount">Number of connected browsers.</param>
+            <param name="AudioClientCount">Number of browsers receiving device audio.</param>
+            <param name="FramesOut">Total video access units produced.</param>
+            <param name="BytesOut">Total video bytes produced.</param>
+            <param name="AudioRunning">Whether the device-audio pipeline is running.</param>
+            <param name="Clients">Latest stats reported by each client.</param>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.Id">
+            <summary>URL-safe device key.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.StableId">
+            <summary>The capture device being streamed.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.StartedUtc">
+            <summary>When ffmpeg was started.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.ClientCount">
+            <summary>Number of connected browsers.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.AudioClientCount">
+            <summary>Number of browsers receiving device audio.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.FramesOut">
+            <summary>Total video access units produced.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.BytesOut">
+            <summary>Total video bytes produced.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.AudioRunning">
+            <summary>Whether the device-audio pipeline is running.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.StreamSessionDto.Clients">
+            <summary>Latest stats reported by each client.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.ClientStatsDto">
+            <summary>
+            Playback statistics reported by a browser over the stream socket.
+            </summary>
+            <param name="ClientId">Server-assigned session id.</param>
+            <param name="Decoder">Decoder in use (<c>webcodecs</c> or <c>mse</c>).</param>
+            <param name="Fps">Rendered frames per second.</param>
+            <param name="JitterMs">Frame arrival jitter in milliseconds.</param>
+            <param name="DroppedFrames">Frames dropped by the client.</param>
+            <param name="ServerDroppedFrames">Frames dropped by the server for this client (slow consumer).</param>
+            <param name="ReportedUtc">When the stats were received.</param>
+        </member>
+        <member name="M:SixBench.Common.Dtos.ClientStatsDto.#ctor(System.String,System.String,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int64},System.Int64,System.Nullable{System.DateTime})">
+            <summary>
+            Playback statistics reported by a browser over the stream socket.
+            </summary>
+            <param name="ClientId">Server-assigned session id.</param>
+            <param name="Decoder">Decoder in use (<c>webcodecs</c> or <c>mse</c>).</param>
+            <param name="Fps">Rendered frames per second.</param>
+            <param name="JitterMs">Frame arrival jitter in milliseconds.</param>
+            <param name="DroppedFrames">Frames dropped by the client.</param>
+            <param name="ServerDroppedFrames">Frames dropped by the server for this client (slow consumer).</param>
+            <param name="ReportedUtc">When the stats were received.</param>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.ClientId">
+            <summary>Server-assigned session id.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.Decoder">
+            <summary>Decoder in use (<c>webcodecs</c> or <c>mse</c>).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.Fps">
+            <summary>Rendered frames per second.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.JitterMs">
+            <summary>Frame arrival jitter in milliseconds.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.DroppedFrames">
+            <summary>Frames dropped by the client.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.ServerDroppedFrames">
+            <summary>Frames dropped by the server for this client (slow consumer).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.ClientStatsDto.ReportedUtc">
+            <summary>When the stats were received.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.TextInputRequest">
+            <summary>
+            Request body to type text into the Roku's on-screen keyboard.
+            </summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.TextInputRequest.Text">
+            <summary>The text to type, one character at a time.</summary>
+        </member>
+        <member name="T:SixBench.Common.Dtos.UpsertEncoderLinkRequest">
+            <summary>
+            Request body to create or update an encoder link.
+            </summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.DisplayName">
+            <summary>Friendly name for the encoder.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.VideoInput">
+            <summary>ffmpeg video input specifier (defaults to the detected device's value when omitted).</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.AudioInput">
+            <summary>ffmpeg audio input specifier; null uses automatic pairing.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.RokuDeviceId">
+            <summary>The Roku plugged into this encoder.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.AllowDeviceAudio">
+            <summary>Whether device audio may be streamed to browsers.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.FrameRate">
+            <summary>Capture frame rate override.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.VideoSize">
+            <summary>Capture size override, e.g. <c>1920x1080</c>.</summary>
+        </member>
+        <member name="P:SixBench.Common.Dtos.UpsertEncoderLinkRequest.PixelFormat">
+            <summary>Capture pixel format override, e.g. <c>uyvy422</c>.</summary>
+        </member>
+        <member name="T:SixBench.Common.Enums.HostPlatform">
+            <summary>
+            The host operating system, which determines the capture backend used by ffmpeg.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.HostPlatform.Unknown">
+            <summary>Unsupported or unknown OS.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.HostPlatform.Windows">
+            <summary>Windows (DirectShow).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.HostPlatform.MacOS">
+            <summary>macOS (AVFoundation).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.HostPlatform.Linux">
+            <summary>Linux (Video4Linux2 + ALSA).</summary>
+        </member>
+        <member name="T:SixBench.Common.Enums.KeyAction">
+            <summary>
+            How a key is sent to the Roku.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.KeyAction.Press">
+            <summary>Press and release (ECP <c>/keypress</c>).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.KeyAction.Down">
+            <summary>Press and hold (ECP <c>/keydown</c>).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.KeyAction.Up">
+            <summary>Release a held key (ECP <c>/keyup</c>).</summary>
+        </member>
+        <member name="T:SixBench.Common.Enums.RokuKey">
+            <summary>
+            Keys supported by the Roku External Control Protocol (ECP).
+            The enum member names match the ECP key names exactly, so <c>ToString()</c> yields the wire value.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Home">
+            <summary>Home button.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Rev">
+            <summary>Rewind.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Fwd">
+            <summary>Fast forward.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Play">
+            <summary>Play / pause toggle.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Select">
+            <summary>OK / select.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Left">
+            <summary>D-pad left.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Right">
+            <summary>D-pad right.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Down">
+            <summary>D-pad down.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Up">
+            <summary>D-pad up.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Back">
+            <summary>Back button.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.InstantReplay">
+            <summary>Instant replay.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Info">
+            <summary>Info / options (*) button.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Backspace">
+            <summary>Backspace (on-screen keyboard).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Search">
+            <summary>Search.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Enter">
+            <summary>Enter (on-screen keyboard).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.VolumeUp">
+            <summary>Volume up (Roku TVs / audio-capable devices).</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.VolumeDown">
+            <summary>Volume down.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.VolumeMute">
+            <summary>Mute toggle.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.PowerOn">
+            <summary>Power on.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.PowerOff">
+            <summary>Power off.</summary>
+        </member>
+        <member name="F:SixBench.Common.Enums.RokuKey.Power">
+            <summary>Power toggle.</summary>
+        </member>
+        <member name="T:SixBench.Common.Options.AudioOptions">
+            <summary>
+            Audio policy and encoding settings, bound from the <c>Audio</c> configuration section.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Options.AudioOptions.SectionName">
+            <summary>Configuration section name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.AudioOptions.AllowDeviceAudio">
+            <summary>Global switch for device audio; must be true and the encoder link must also allow it.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.AudioOptions.DeviceBitrate">
+            <summary>Opus bitrate for device audio, e.g. <c>128k</c>.</summary>
+        </member>
+        <member name="T:SixBench.Common.Options.FfmpegOptions">
+            <summary>
+            ffmpeg settings, bound from the <c>Ffmpeg</c> configuration section.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Options.FfmpegOptions.SectionName">
+            <summary>Configuration section name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.Path">
+            <summary>Path to the ffmpeg executable, or just <c>ffmpeg</c> to use PATH.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.VideoEncoder">
+            <summary>
+            H.264 encoder: <c>libx264</c>, <c>h264_videotoolbox</c>, <c>h264_nvenc</c>, <c>h264_qsv</c>, <c>h264_amf</c>
+            or <c>h264_vaapi</c> get tuned low-latency settings; any other encoder name is passed through as-is.
+            </summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.ExtraEncoderArgs">
+            <summary>Extra encoder arguments appended after the defaults (space separated).</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.VideoBitrate">
+            <summary>Target video bitrate, e.g. <c>6M</c>. Null leaves the encoder default (CRF for libx264).</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.GopSeconds">
+            <summary>GOP length in seconds; also the worst-case wait for a keyframe.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.DefaultFrameRate">
+            <summary>Default capture frame rate when an encoder link has no override.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.DefaultVideoSize">
+            <summary>Default capture size (e.g. <c>1920x1080</c>) when an encoder link has no override.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.DefaultPixelFormat">
+            <summary>Default capture pixel format when an encoder link has no override.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.FfmpegOptions.ProbeTimeoutMs">
+            <summary>Timeout for device-listing commands, in milliseconds.</summary>
+        </member>
+        <member name="T:SixBench.Common.Options.RokuOptions">
+            <summary>
+            Roku discovery and control settings, bound from the <c>Roku</c> configuration section.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Options.RokuOptions.SectionName">
+            <summary>Configuration section name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.RokuOptions.DiscoveryTimeoutMs">
+            <summary>How long to collect SSDP responses, in milliseconds.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.RokuOptions.EcpPort">
+            <summary>Default ECP port.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.RokuOptions.RequestTimeoutMs">
+            <summary>HTTP timeout for ECP requests, in milliseconds.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.RokuOptions.TextCharDelayMs">
+            <summary>Delay between characters when typing text, in milliseconds.</summary>
+        </member>
+        <member name="T:SixBench.Common.Options.StreamingOptions">
+            <summary>
+            Stream fan-out settings, bound from the <c>Streaming</c> configuration section.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Options.StreamingOptions.SectionName">
+            <summary>Configuration section name.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.StreamingOptions.IdleShutdownSeconds">
+            <summary>Seconds to keep ffmpeg running after the last client disconnects.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.StreamingOptions.SubscriberQueueFrames">
+            <summary>Per-client queue length in messages before the server drops to the next keyframe.</summary>
+        </member>
+        <member name="P:SixBench.Common.Options.StreamingOptions.MaxControlMessageBytes">
+            <summary>Maximum size of an inbound control message in bytes.</summary>
+        </member>
+        <member name="T:SixBench.Common.Streaming.AudioFrameHeader">
+            <summary>
+            The 12-byte header that prefixes every audio packet on the stream socket.
+            </summary>
+            <remarks>
+            Layout (big-endian):
+            <code>
+            0..1  'V' 'A'    magic
+            2     flags      bit0 = mic/upstream, bit1 = discontinuity
+            3     reserved   0
+            4..7  sequence   uint32
+            8..11 timestamp  uint32 milliseconds since the session started
+            </code>
+            Video frames have no header; Annex-B data always begins with <c>00 00</c>, so it never collides with the magic.
+            </remarks>
+            <param name="Flags">Header flags.</param>
+            <param name="Sequence">Monotonic packet sequence number.</param>
+            <param name="TimestampMs">Milliseconds since the session started.</param>
+        </member>
+        <member name="M:SixBench.Common.Streaming.AudioFrameHeader.#ctor(SixBench.Common.Streaming.AudioFrameFlags,System.UInt32,System.UInt32)">
+            <summary>
+            The 12-byte header that prefixes every audio packet on the stream socket.
+            </summary>
+            <remarks>
+            Layout (big-endian):
+            <code>
+            0..1  'V' 'A'    magic
+            2     flags      bit0 = mic/upstream, bit1 = discontinuity
+            3     reserved   0
+            4..7  sequence   uint32
+            8..11 timestamp  uint32 milliseconds since the session started
+            </code>
+            Video frames have no header; Annex-B data always begins with <c>00 00</c>, so it never collides with the magic.
+            </remarks>
+            <param name="Flags">Header flags.</param>
+            <param name="Sequence">Monotonic packet sequence number.</param>
+            <param name="TimestampMs">Milliseconds since the session started.</param>
+        </member>
+        <member name="P:SixBench.Common.Streaming.AudioFrameHeader.Flags">
+            <summary>Header flags.</summary>
+        </member>
+        <member name="P:SixBench.Common.Streaming.AudioFrameHeader.Sequence">
+            <summary>Monotonic packet sequence number.</summary>
+        </member>
+        <member name="P:SixBench.Common.Streaming.AudioFrameHeader.TimestampMs">
+            <summary>Milliseconds since the session started.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.AudioFrameHeader.Size">
+            <summary>Header length in bytes.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.AudioFrameHeader.Magic0">
+            <summary>First magic byte ('V').</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.AudioFrameHeader.Magic1">
+            <summary>Second magic byte ('A').</summary>
+        </member>
+        <member name="M:SixBench.Common.Streaming.AudioFrameHeader.HasMagic(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Returns true when <paramref name="data"/> starts with the audio magic bytes.
+            </summary>
+            <param name="data">A received binary message.</param>
+            <returns>True if the message is an audio frame.</returns>
+        </member>
+        <member name="M:SixBench.Common.Streaming.AudioFrameHeader.Write(System.Span{System.Byte})">
+            <summary>
+            Writes the header into the first <see cref="F:SixBench.Common.Streaming.AudioFrameHeader.Size"/> bytes of <paramref name="destination"/>.
+            </summary>
+            <param name="destination">Target buffer, at least <see cref="F:SixBench.Common.Streaming.AudioFrameHeader.Size"/> bytes.</param>
+            <exception cref="T:System.ArgumentException">The buffer is too small.</exception>
+        </member>
+        <member name="M:SixBench.Common.Streaming.AudioFrameHeader.TryRead(System.ReadOnlySpan{System.Byte},SixBench.Common.Streaming.AudioFrameHeader@)">
+            <summary>
+            Attempts to parse a header from the start of <paramref name="source"/>.
+            </summary>
+            <param name="source">A received binary message.</param>
+            <param name="header">The parsed header when successful.</param>
+            <returns>True if the magic matched and the buffer was long enough.</returns>
+        </member>
+        <member name="M:SixBench.Common.Streaming.AudioFrameHeader.Frame(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Allocates a buffer containing this header followed by <paramref name="payload"/>.
+            </summary>
+            <param name="payload">The Opus packet.</param>
+            <returns>The framed message.</returns>
+        </member>
+        <member name="T:SixBench.Common.Streaming.AudioFrameFlags">
+            <summary>
+            Flags carried in <see cref="T:SixBench.Common.Streaming.AudioFrameHeader"/>.
+            </summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.AudioFrameFlags.None">
+            <summary>No flags; downstream device audio.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.AudioFrameFlags.Mic">
+            <summary>The packet is upstream microphone audio.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.AudioFrameFlags.Discontinuity">
+            <summary>The packet follows a gap (pipeline restart); the receiver should reset timing.</summary>
+        </member>
+        <member name="T:SixBench.Common.Streaming.StreamProtocol">
+            <summary>
+            Constants for the stream WebSocket protocol.
+            </summary>
+            <remarks>
+            Text frames carry JSON control messages with a <c>type</c> discriminator.
+            Binary frames from the server are either raw H.264 Annex-B access units (video)
+            or Opus packets prefixed with a 12-byte <see cref="T:SixBench.Common.Streaming.AudioFrameHeader"/> (audio).
+            </remarks>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.Hello">
+            <summary>Server → client: session established; carries the audio grant.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.AudioOn">
+            <summary>Client → server: start receiving device audio.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.AudioOff">
+            <summary>Client → server: stop receiving device audio.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.AudioState">
+            <summary>Server → client: device-audio state changed.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.MicClaim">
+            <summary>Client → server: request the microphone uplink.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.MicClaimResult">
+            <summary>Server → client: response to <see cref="F:SixBench.Common.Streaming.StreamProtocol.MicClaim"/>.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.MicRelease">
+            <summary>Client → server: release the microphone uplink.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.Keyframe">
+            <summary>Client → server: resend the current GOP starting at a keyframe.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.Stats">
+            <summary>Client → server: playback statistics.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.Error">
+            <summary>Server → client: an error occurred.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.StreamEnded">
+            <summary>Server → client: the capture pipeline ended (device unplugged, ffmpeg crash).</summary>
+        </member>
+        <member name="T:SixBench.Common.Streaming.StreamProtocol.ErrorCodes">
+            <summary>Error codes sent in <see cref="F:SixBench.Common.Streaming.StreamProtocol.Error"/> and <see cref="F:SixBench.Common.Streaming.StreamProtocol.MicClaimResult"/> messages.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.ErrorCodes.NotPermitted">
+            <summary>The server does not permit the requested feature for this session.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.ErrorCodes.MicBusy">
+            <summary>Another client already holds the microphone.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.ErrorCodes.AudioUnavailable">
+            <summary>Audio is not available for this device.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.ErrorCodes.BadMessage">
+            <summary>The control message could not be understood.</summary>
+        </member>
+        <member name="F:SixBench.Common.Streaming.StreamProtocol.ErrorCodes.CaptureFailed">
+            <summary>The capture pipeline failed.</summary>
+        </member>
+        <member name="T:SixBench.Common.Utilities.DeviceKey">
+            <summary>
+            Converts capture-device stable ids to and from URL-safe route keys.
+            Stable ids can contain characters that are awkward in URLs (DirectShow monikers contain
+            <c>\</c>, <c>?</c> and <c>#</c>), so routes use the base64url form instead.
+            </summary>
+        </member>
+        <member name="M:SixBench.Common.Utilities.DeviceKey.Encode(System.String)">
+            <summary>
+            Encodes a stable id as a base64url route key.
+            </summary>
+            <param name="stableId">The stable id.</param>
+            <returns>The route key.</returns>
+        </member>
+        <member name="M:SixBench.Common.Utilities.DeviceKey.TryDecode(System.String,System.String@)">
+            <summary>
+            Decodes a base64url route key.
+            </summary>
+            <param name="key">The route key.</param>
+            <param name="stableId">The decoded stable id.</param>
+            <returns>True when <paramref name="key"/> is valid base64url.</returns>
+        </member>
+        <member name="T:SixBench.Common.Utilities.PathUtil">
+            <summary>
+            Path helpers that normalize to forward slashes so paths behave the same on Windows, macOS and Linux.
+            </summary>
+        </member>
+        <member name="M:SixBench.Common.Utilities.PathUtil.Normalize(System.String)">
+            <summary>
+            Converts back slashes to forward slashes and collapses duplicate separators.
+            A leading <c>//</c> (UNC path) is preserved.
+            </summary>
+            <param name="path">The path to normalize.</param>
+            <returns>The normalized path, or an empty string for null/blank input.</returns>
+        </member>
+        <member name="M:SixBench.Common.Utilities.PathUtil.Combine(System.String[])">
+            <summary>
+            Joins path segments with forward slashes and normalizes the result.
+            </summary>
+            <param name="segments">Segments to join.</param>
+            <returns>The combined, normalized path.</returns>
+        </member>
+        <member name="M:SixBench.Common.Utilities.PathUtil.ResolveAgainst(System.String,System.String)">
+            <summary>
+            Resolves a possibly relative path against <paramref name="basePath"/> and normalizes it.
+            </summary>
+            <param name="path">Absolute or relative path.</param>
+            <param name="basePath">Directory that relative paths are resolved against.</param>
+            <returns>An absolute, normalized path.</returns>
+        </member>
+    </members>
+</doc>

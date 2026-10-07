@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- The Nuxt app; generated into wwwroot on publish. -->
+    <WebAppRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', 'web'))</WebAppRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SixBench.Services\SixBench.Services.csproj" />
+    <ProjectReference Include="..\SixBench.Common\SixBench.Common.csproj" />
+    <ProjectReference Include="..\SixBench.Data\SixBench.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
+  </ItemGroup>
+
+  <!--
+    On publish, build the Nuxt SPA (static output) and publish it as wwwroot.
+    Skip with -p:SkipWeb=true (e.g. when the frontend is deployed separately).
+  -->
+  <Target Name="PublishWebApp" AfterTargets="ComputeFilesToPublish" Condition="'$(SkipWeb)' != 'true'">
+    <Exec WorkingDirectory="$(WebAppRoot)" Command="npm ci" />
+    <Exec WorkingDirectory="$(WebAppRoot)" Command="npm run generate" />
+    <ItemGroup>
+      <WebAppDist Include="$(WebAppRoot).output/public/**" />
+      <ResolvedFileToPublish Include="@(WebAppDist->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot/%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,1965 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SixBench.Services</name>
+    </assembly>
+    <members>
+        <member name="T:SixBench.Services.Capture.AudioPairingHeuristic">
+            <summary>
+            Guesses which audio device belongs to a capture encoder's video device.
+            HDMI capture dongles expose video and audio as separate OS devices with related names
+            (e.g. "USB Video" + "USB Digital Audio"). The user can override the guess on the encoder link.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Capture.AudioPairingHeuristic.Pair(System.String,System.Collections.Generic.IReadOnlyList{SixBench.Services.Capture.AudioDeviceInfo})">
+            <summary>
+            Picks the best matching audio device for <paramref name="videoName"/>, or null when none is convincing.
+            </summary>
+            <param name="videoName">The video device name.</param>
+            <param name="audioDevices">Available audio devices.</param>
+            <returns>The paired audio device, or null.</returns>
+        </member>
+        <member name="T:SixBench.Services.Capture.AvFoundationDeviceEnumerator">
+            <summary>
+            macOS enumerator using ffmpeg's AVFoundation device list plus <c>system_profiler</c> for stable ids.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.AvFoundationDeviceEnumerator.#ctor(SixBench.Services.Processes.IProcessRunner,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.FfmpegOptions},Microsoft.Extensions.Logging.ILogger{SixBench.Services.Capture.AvFoundationDeviceEnumerator})">
+            <summary>
+            macOS enumerator using ffmpeg's AVFoundation device list plus <c>system_profiler</c> for stable ids.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.AvFoundationDeviceEnumerator.Platform">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.AvFoundationDeviceEnumerator.EnumerateAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Capture.CaptureDeviceService">
+            <summary>
+            Default <see cref="T:SixBench.Services.Capture.ICaptureDeviceService"/>.
+            </summary>
+            <param name="inventory">Device inventory provider.</param>
+            <param name="links">Encoder link repository.</param>
+            <param name="audioPolicy">Audio policy.</param>
+            <param name="ffmpegOptions">ffmpeg options (capture defaults).</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.CaptureDeviceService.#ctor(SixBench.Services.Capture.IDeviceInventoryProvider,SixBench.Data.Repositories.IEncoderLinkRepository,SixBench.Services.Streaming.IAudioPolicy,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.FfmpegOptions})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Capture.ICaptureDeviceService"/>.
+            </summary>
+            <param name="inventory">Device inventory provider.</param>
+            <param name="links">Encoder link repository.</param>
+            <param name="audioPolicy">Audio policy.</param>
+            <param name="ffmpegOptions">ffmpeg options (capture defaults).</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.CaptureDeviceService.ListAsync(System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.CaptureDeviceService.GetAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.CaptureDeviceService.ListAudioInputsAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.CaptureDeviceService.ResolveSourceAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Capture.CaptureSource">
+            <summary>
+            Everything needed to start capturing from one encoder: inputs, capture settings and the audio grant.
+            </summary>
+            <param name="StableId">Capture device stable id.</param>
+            <param name="Name">Display name.</param>
+            <param name="Platform">Capture backend platform.</param>
+            <param name="VideoInput">ffmpeg video input specifier.</param>
+            <param name="AudioInput">ffmpeg audio input specifier, if any.</param>
+            <param name="FrameRate">Capture frame rate.</param>
+            <param name="VideoSize">Capture size, e.g. <c>1920x1080</c>, or null for the device default.</param>
+            <param name="PixelFormat">Capture pixel format, or null for the device default.</param>
+            <param name="AudioGrant">What audio the server permits for this encoder.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.CaptureSource.#ctor(System.String,System.String,SixBench.Common.Enums.HostPlatform,System.String,System.String,System.Double,System.String,System.String,SixBench.Services.Capture.AudioGrant)">
+            <summary>
+            Everything needed to start capturing from one encoder: inputs, capture settings and the audio grant.
+            </summary>
+            <param name="StableId">Capture device stable id.</param>
+            <param name="Name">Display name.</param>
+            <param name="Platform">Capture backend platform.</param>
+            <param name="VideoInput">ffmpeg video input specifier.</param>
+            <param name="AudioInput">ffmpeg audio input specifier, if any.</param>
+            <param name="FrameRate">Capture frame rate.</param>
+            <param name="VideoSize">Capture size, e.g. <c>1920x1080</c>, or null for the device default.</param>
+            <param name="PixelFormat">Capture pixel format, or null for the device default.</param>
+            <param name="AudioGrant">What audio the server permits for this encoder.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.StableId">
+            <summary>Capture device stable id.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.Name">
+            <summary>Display name.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.Platform">
+            <summary>Capture backend platform.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.VideoInput">
+            <summary>ffmpeg video input specifier.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.AudioInput">
+            <summary>ffmpeg audio input specifier, if any.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.FrameRate">
+            <summary>Capture frame rate.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.VideoSize">
+            <summary>Capture size, e.g. <c>1920x1080</c>, or null for the device default.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.PixelFormat">
+            <summary>Capture pixel format, or null for the device default.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.CaptureSource.AudioGrant">
+            <summary>What audio the server permits for this encoder.</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.AudioGrant">
+            <summary>
+            The server's audio permission for a session (sent to clients as <c>audio_grant</c>).
+            </summary>
+            <param name="Device">Device audio may be streamed to the client.</param>
+            <param name="Mic">The client's microphone may be sent to the device (always false in v1).</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.AudioGrant.#ctor(System.Boolean,System.Boolean)">
+            <summary>
+            The server's audio permission for a session (sent to clients as <c>audio_grant</c>).
+            </summary>
+            <param name="Device">Device audio may be streamed to the client.</param>
+            <param name="Mic">The client's microphone may be sent to the device (always false in v1).</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.AudioGrant.Device">
+            <summary>Device audio may be streamed to the client.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.AudioGrant.Mic">
+            <summary>The client's microphone may be sent to the device (always false in v1).</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.DeviceInventory">
+            <summary>
+            Capture devices detected on the host at one point in time.
+            </summary>
+            <param name="Platform">Capture backend platform.</param>
+            <param name="Video">Video capture devices.</param>
+            <param name="Audio">Audio capture devices.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceInventory.#ctor(SixBench.Common.Enums.HostPlatform,System.Collections.Generic.IReadOnlyList{SixBench.Services.Capture.VideoDeviceInfo},System.Collections.Generic.IReadOnlyList{SixBench.Services.Capture.AudioDeviceInfo})">
+            <summary>
+            Capture devices detected on the host at one point in time.
+            </summary>
+            <param name="Platform">Capture backend platform.</param>
+            <param name="Video">Video capture devices.</param>
+            <param name="Audio">Audio capture devices.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.DeviceInventory.Platform">
+            <summary>Capture backend platform.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.DeviceInventory.Video">
+            <summary>Video capture devices.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.DeviceInventory.Audio">
+            <summary>Audio capture devices.</summary>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceInventory.Empty(SixBench.Common.Enums.HostPlatform)">
+            <summary>An empty inventory.</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.VideoDeviceInfo">
+            <summary>
+            A video capture device.
+            </summary>
+            <param name="StableId">Identifier that survives re-plugging (platform prefixed).</param>
+            <param name="Name">Device name.</param>
+            <param name="Input">ffmpeg input specifier.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.VideoDeviceInfo.#ctor(System.String,System.String,System.String)">
+            <summary>
+            A video capture device.
+            </summary>
+            <param name="StableId">Identifier that survives re-plugging (platform prefixed).</param>
+            <param name="Name">Device name.</param>
+            <param name="Input">ffmpeg input specifier.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.VideoDeviceInfo.StableId">
+            <summary>Identifier that survives re-plugging (platform prefixed).</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.VideoDeviceInfo.Name">
+            <summary>Device name.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.VideoDeviceInfo.Input">
+            <summary>ffmpeg input specifier.</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.AudioDeviceInfo">
+            <summary>
+            An audio capture device.
+            </summary>
+            <param name="Name">Device name.</param>
+            <param name="Input">ffmpeg input specifier.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.AudioDeviceInfo.#ctor(System.String,System.String)">
+            <summary>
+            An audio capture device.
+            </summary>
+            <param name="Name">Device name.</param>
+            <param name="Input">ffmpeg input specifier.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.AudioDeviceInfo.Name">
+            <summary>Device name.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.AudioDeviceInfo.Input">
+            <summary>ffmpeg input specifier.</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.IDeviceInventoryProvider">
+            <summary>
+            Caches the device inventory briefly; enumeration spawns processes and takes hundreds of milliseconds.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Capture.IDeviceInventoryProvider.GetAsync(System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Returns the current inventory, re-enumerating when the cache is stale or <paramref name="refresh"/> is true.
+            </summary>
+            <param name="refresh">Bypass the cache.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The inventory.</returns>
+        </member>
+        <member name="T:SixBench.Services.Capture.DeviceInventoryProvider">
+            <summary>
+            Default <see cref="T:SixBench.Services.Capture.IDeviceInventoryProvider"/> with a short time-based cache.
+            </summary>
+            <param name="enumerator">The platform enumerator.</param>
+            <param name="timeProvider">Clock.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceInventoryProvider.#ctor(SixBench.Services.Capture.ICaptureDeviceEnumerator,System.TimeProvider)">
+            <summary>
+            Default <see cref="T:SixBench.Services.Capture.IDeviceInventoryProvider"/> with a short time-based cache.
+            </summary>
+            <param name="enumerator">The platform enumerator.</param>
+            <param name="timeProvider">Clock.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceInventoryProvider.GetAsync(System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceInventoryProvider.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Capture.DeviceListParsers">
+            <summary>
+            Pure parsers for the device-listing output of ffmpeg and OS tools. Kept free of I/O so they can be unit tested.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.ParseAvFoundation(System.String)">
+            <summary>
+            Parses <c>ffmpeg -f avfoundation -list_devices true -i ""</c> stderr.
+            "Capture screen" pseudo-devices are excluded.
+            </summary>
+            <param name="stderr">ffmpeg stderr.</param>
+            <returns>Video device names and audio device names, in index order.</returns>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.ParseSystemProfilerCameras(System.String)">
+            <summary>
+            Parses <c>system_profiler SPCameraDataType -json</c> into a name → unique id map.
+            </summary>
+            <param name="json">The JSON output.</param>
+            <returns>Camera unique ids keyed by name (case-insensitive).</returns>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.ParseDirectShow(System.String)">
+            <summary>
+            Parses <c>ffmpeg -f dshow -list_devices true -i dummy</c> stderr (both the ffmpeg 5+ inline format
+            and the older section-header format).
+            </summary>
+            <param name="stderr">ffmpeg stderr.</param>
+            <returns>Video and audio devices with their DirectShow alternative names, when present.</returns>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.ParseArecord(System.String)">
+            <summary>
+            Parses <c>arecord -l</c> output into ALSA capture devices.
+            </summary>
+            <param name="output">arecord stdout.</param>
+            <returns>Audio devices with <c>hw:CARD=x,DEV=n</c> inputs.</returns>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.AvFoundationDeviceLine">
+            <remarks>
+            Pattern:<br/>
+            <code>\\]\\s*\\[(?&lt;index&gt;\\d+)\\]\\s+(?&lt;name&gt;.+)$</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match ']'.<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ Match '['.<br/>
+            ○ "index" capture group.<br/>
+                ○ Match a Unicode digit atomically at least once.<br/>
+            ○ Match ']'.<br/>
+            ○ Match a whitespace character greedily at least once.<br/>
+            ○ "name" capture group.<br/>
+                ○ Match a character other than '\n' greedily at least once.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.DshowDeviceLine">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\[[^\\]]+ @ [^\\]]+\\]\\s+"(?&lt;name&gt;[^"]+)"(?:\\s+\\((?&lt;kind&gt;video|audio|none)\\))?\\s*$</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match '['.<br/>
+            ○ Match a character other than ']' greedily at least once.<br/>
+            ○ Match the string " @ ".<br/>
+            ○ Match a character other than ']' atomically at least once.<br/>
+            ○ Match ']'.<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ Match '"'.<br/>
+            ○ "name" capture group.<br/>
+                ○ Match a character other than '"' atomically at least once.<br/>
+            ○ Match '"'.<br/>
+            ○ Optional (greedy).<br/>
+                ○ Match a whitespace character atomically at least once.<br/>
+                ○ Match '('.<br/>
+                ○ "kind" capture group.<br/>
+                    ○ Match with 3 alternative expressions.<br/>
+                        ○ Match the string "video".<br/>
+                        ○ Match the string "audio".<br/>
+                        ○ Match the string "none".<br/>
+                ○ Match ')'.<br/>
+            ○ Match a whitespace character greedily any number of times.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.DshowAlternativeName">
+            <remarks>
+            Pattern:<br/>
+            <code>Alternative name\\s+"(?&lt;alt&gt;[^"]+)"</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "Alternative name".<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ Match '"'.<br/>
+            ○ "alt" capture group.<br/>
+                ○ Match a character other than '"' atomically at least once.<br/>
+            ○ Match '"'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:SixBench.Services.Capture.DeviceListParsers.ArecordLine">
+            <remarks>
+            Pattern:<br/>
+            <code>^card\\s+\\d+:\\s+(?&lt;cardId&gt;[^\\s]+)\\s+\\[(?&lt;cardName&gt;[^\\]]+)\\],\\s+device\\s+(?&lt;dev&gt;\\d+):</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match the string "card".<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ Match a Unicode digit atomically at least once.<br/>
+            ○ Match ':'.<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ "cardId" capture group.<br/>
+                ○ Match any character other than a whitespace character atomically at least once.<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ Match '['.<br/>
+            ○ "cardName" capture group.<br/>
+                ○ Match a character other than ']' atomically at least once.<br/>
+            ○ Match the string "],".<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ Match the string "device".<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ "dev" capture group.<br/>
+                ○ Match a Unicode digit atomically at least once.<br/>
+            ○ Match ':'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:SixBench.Services.Capture.DshowDevice">
+            <summary>
+            A DirectShow device as listed by ffmpeg.
+            </summary>
+            <param name="Name">Friendly name.</param>
+            <param name="AlternativeName">Unique moniker (<c>@device_pnp_...</c>), when reported.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.DshowDevice.#ctor(System.String,System.String)">
+            <summary>
+            A DirectShow device as listed by ffmpeg.
+            </summary>
+            <param name="Name">Friendly name.</param>
+            <param name="AlternativeName">Unique moniker (<c>@device_pnp_...</c>), when reported.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.DshowDevice.Name">
+            <summary>Friendly name.</summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.DshowDevice.AlternativeName">
+            <summary>Unique moniker (<c>@device_pnp_...</c>), when reported.</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.DirectShowDeviceEnumerator">
+            <summary>
+            Windows enumerator using ffmpeg's DirectShow device list. The DirectShow "alternative name"
+            (PnP moniker) is used as both the stable id and the ffmpeg input, since friendly names can collide.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.DirectShowDeviceEnumerator.#ctor(SixBench.Services.Processes.IProcessRunner,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.FfmpegOptions},Microsoft.Extensions.Logging.ILogger{SixBench.Services.Capture.DirectShowDeviceEnumerator})">
+            <summary>
+            Windows enumerator using ffmpeg's DirectShow device list. The DirectShow "alternative name"
+            (PnP moniker) is used as both the stable id and the ffmpeg input, since friendly names can collide.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.DirectShowDeviceEnumerator.Platform">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.DirectShowDeviceEnumerator.EnumerateAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Capture.HostPlatformDetector">
+            <summary>
+            Detects the current <see cref="T:SixBench.Common.Enums.HostPlatform"/>.
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.HostPlatformDetector.Current">
+            <summary>The platform this process is running on.</summary>
+        </member>
+        <member name="T:SixBench.Services.Capture.ICaptureDeviceEnumerator">
+            <summary>
+            Lists the capture devices on the host for one platform backend.
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.ICaptureDeviceEnumerator.Platform">
+            <summary>The platform this enumerator supports.</summary>
+        </member>
+        <member name="M:SixBench.Services.Capture.ICaptureDeviceEnumerator.EnumerateAsync(System.Threading.CancellationToken)">
+            <summary>
+            Enumerates video and audio capture devices.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The detected devices.</returns>
+        </member>
+        <member name="T:SixBench.Services.Capture.ICaptureDeviceService">
+            <summary>
+            Combines detected capture devices with saved encoder links.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Capture.ICaptureDeviceService.ListAsync(System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Lists detected encoders merged with saved links. Saved links whose device is missing are included
+            with <see cref="P:SixBench.Common.Dtos.CaptureDeviceDto.IsConnected"/> = false.
+            </summary>
+            <param name="refresh">Re-enumerate instead of using the short cache.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>All encoders.</returns>
+        </member>
+        <member name="M:SixBench.Services.Capture.ICaptureDeviceService.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Gets one encoder.
+            </summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The encoder.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">No such device or link.</exception>
+        </member>
+        <member name="M:SixBench.Services.Capture.ICaptureDeviceService.ListAudioInputsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Lists the host's audio capture devices (for choosing an encoder's audio input manually).
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>Audio device names and inputs.</returns>
+        </member>
+        <member name="M:SixBench.Services.Capture.ICaptureDeviceService.ResolveSourceAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Resolves everything needed to start capturing from a connected encoder.
+            </summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The capture source.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">The device is not connected.</exception>
+        </member>
+        <member name="T:SixBench.Services.Capture.UnsupportedDeviceEnumerator">
+            <summary>
+            Enumerator for unsupported platforms; always returns an empty inventory.
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Capture.UnsupportedDeviceEnumerator.Platform">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.UnsupportedDeviceEnumerator.EnumerateAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Capture.V4l2DeviceEnumerator">
+            <summary>
+            Linux enumerator. Video devices come from <c>/dev/v4l/by-id</c> (stable across reboots and re-plugging,
+            unlike <c>/dev/videoN</c>); audio devices come from <c>arecord -l</c>.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Capture.V4l2DeviceEnumerator.#ctor(SixBench.Services.Processes.IProcessRunner,Microsoft.Extensions.Logging.ILogger{SixBench.Services.Capture.V4l2DeviceEnumerator})">
+            <summary>
+            Linux enumerator. Video devices come from <c>/dev/v4l/by-id</c> (stable across reboots and re-plugging,
+            unlike <c>/dev/videoN</c>); audio devices come from <c>arecord -l</c>.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="P:SixBench.Services.Capture.V4l2DeviceEnumerator.Platform">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Capture.V4l2DeviceEnumerator.EnumerateAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Exceptions.NotFoundException">
+            <summary>
+            Thrown when a requested resource does not exist. Mapped to HTTP 404.
+            </summary>
+            <param name="message">Description of what was not found.</param>
+        </member>
+        <member name="M:SixBench.Services.Exceptions.NotFoundException.#ctor(System.String)">
+            <summary>
+            Thrown when a requested resource does not exist. Mapped to HTTP 404.
+            </summary>
+            <param name="message">Description of what was not found.</param>
+        </member>
+        <member name="T:SixBench.Services.Exceptions.RokuUnreachableException">
+            <summary>
+            Thrown when a Roku does not respond to ECP requests. Mapped to HTTP 502.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Exceptions.RokuUnreachableException.#ctor(System.String,System.Exception)">
+            <summary>
+            Creates the exception.
+            </summary>
+            <param name="message">Description of the failure.</param>
+            <param name="inner">The underlying transport error.</param>
+        </member>
+        <member name="T:SixBench.Services.Exceptions.ServiceValidationException">
+            <summary>
+            Thrown when a request is well-formed but invalid for the current state. Mapped to HTTP 400.
+            </summary>
+            <param name="message">Description of the validation failure.</param>
+        </member>
+        <member name="M:SixBench.Services.Exceptions.ServiceValidationException.#ctor(System.String)">
+            <summary>
+            Thrown when a request is well-formed but invalid for the current state. Mapped to HTTP 400.
+            </summary>
+            <param name="message">Description of the validation failure.</param>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegArgsBuilder">
+            <summary>
+            Builds ffmpeg argument lists for capture, per platform and encoder.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegArgsBuilder.BuildVideo(SixBench.Services.Capture.CaptureSource,SixBench.Common.Options.FfmpegOptions)">
+            <summary>
+            Arguments that capture video and write raw H.264 Annex-B (with AUD NALs) to stdout.
+            </summary>
+            <param name="source">The capture source.</param>
+            <param name="options">ffmpeg options.</param>
+            <returns>The argument list.</returns>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegArgsBuilder.BuildAudio(SixBench.Services.Capture.CaptureSource,SixBench.Common.Options.FfmpegOptions,SixBench.Common.Options.AudioOptions)">
+            <summary>
+            Arguments that capture audio and write 48 kHz stereo Opus (20 ms packets) in Ogg to stdout.
+            </summary>
+            <param name="source">The capture source; must have an <see cref="P:SixBench.Services.Capture.CaptureSource.AudioInput"/>.</param>
+            <param name="options">ffmpeg options.</param>
+            <param name="audioOptions">Audio options.</param>
+            <returns>The argument list.</returns>
+            <exception cref="T:System.InvalidOperationException">The source has no audio input.</exception>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegCapabilityReport">
+            <summary>
+            What the installed ffmpeg can do, as far as SixBench cares.
+            </summary>
+            <param name="Runnable">ffmpeg started and listed its encoders.</param>
+            <param name="VideoEncoder">The configured video encoder.</param>
+            <param name="HasVideoEncoder">The configured video encoder is available.</param>
+            <param name="HasOpus">libopus is available (needed for device audio).</param>
+            <param name="AvailableH264Encoders">Every H.264 encoder this build offers.</param>
+            <param name="Problem">A human-readable description of what is wrong, or null.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.#ctor(System.Boolean,System.String,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>
+            What the installed ffmpeg can do, as far as SixBench cares.
+            </summary>
+            <param name="Runnable">ffmpeg started and listed its encoders.</param>
+            <param name="VideoEncoder">The configured video encoder.</param>
+            <param name="HasVideoEncoder">The configured video encoder is available.</param>
+            <param name="HasOpus">libopus is available (needed for device audio).</param>
+            <param name="AvailableH264Encoders">Every H.264 encoder this build offers.</param>
+            <param name="Problem">A human-readable description of what is wrong, or null.</param>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.Runnable">
+            <summary>ffmpeg started and listed its encoders.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.VideoEncoder">
+            <summary>The configured video encoder.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.HasVideoEncoder">
+            <summary>The configured video encoder is available.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.HasOpus">
+            <summary>libopus is available (needed for device audio).</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.AvailableH264Encoders">
+            <summary>Every H.264 encoder this build offers.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.Problem">
+            <summary>A human-readable description of what is wrong, or null.</summary>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.IFfmpegCapabilities">
+            <summary>
+            Checks the installed ffmpeg once and caches the result.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.IFfmpegCapabilities.GetAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns the (cached) capability report.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The report.</returns>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegCapabilities">
+            <summary>
+            Default <see cref="T:SixBench.Services.Ffmpeg.IFfmpegCapabilities"/>, based on <c>ffmpeg -encoders</c>.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.#ctor(SixBench.Services.Processes.IProcessRunner,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.FfmpegOptions})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Ffmpeg.IFfmpegCapabilities"/>, based on <c>ffmpeg -encoders</c>.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.GetAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.Evaluate(System.String,System.String,SixBench.Services.Processes.ProcessResult)">
+            <summary>
+            Builds a report from <c>ffmpeg -encoders</c> output.
+            </summary>
+            <param name="ffmpegPath">The configured ffmpeg path (for messages).</param>
+            <param name="videoEncoder">The configured video encoder.</param>
+            <param name="result">The process result.</param>
+            <returns>The report.</returns>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.EncoderLine">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\s*(?&lt;kind&gt;[VAS])[A-Z.]{5}\\s+(?&lt;name&gt;\\S+)\\s</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ "kind" capture group.<br/>
+                ○ Match a character in the set [ASV].<br/>
+            ○ Match a character in the set [.A-Z] exactly 5 times.<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ "name" capture group.<br/>
+                ○ Match any character other than a whitespace character atomically at least once.<br/>
+            ○ Match a whitespace character.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegStartupCheck">
+            <summary>
+            Logs ffmpeg problems at startup so a missing encoder is obvious before anyone presses Watch.
+            </summary>
+            <param name="capabilities">Capability checker.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegStartupCheck.#ctor(SixBench.Services.Ffmpeg.IFfmpegCapabilities,Microsoft.Extensions.Logging.ILogger{SixBench.Services.Ffmpeg.FfmpegStartupCheck})">
+            <summary>
+            Logs ffmpeg problems at startup so a missing encoder is obvious before anyone presses Watch.
+            </summary>
+            <param name="capabilities">Capability checker.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegStartupCheck.ExecuteAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegProcess">
+            <summary>
+            A long-running ffmpeg child process whose stdout carries media data.
+            stderr is forwarded to the logger and the most recent lines are kept for error reporting.
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegProcess.Output">
+            <summary>Process stdout as a raw byte stream.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegProcess.ProcessId">
+            <summary>Operating-system process id.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegProcess.RecentErrors">
+            <summary>The last lines ffmpeg wrote to stderr.</summary>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegProcess.Start(System.String,System.Collections.Generic.IReadOnlyList{System.String},Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+            Starts ffmpeg.
+            </summary>
+            <param name="ffmpegPath">Executable path.</param>
+            <param name="arguments">Arguments (no shell quoting).</param>
+            <param name="logger">Logger for stderr.</param>
+            <param name="name">Short name used in log messages, e.g. <c>video:FaceTime HD Camera</c>.</param>
+            <returns>The running process.</returns>
+            <exception cref="T:System.InvalidOperationException">ffmpeg could not be started.</exception>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegProcess.WaitForExitAsync(System.Threading.CancellationToken)">
+            <summary>
+            Waits for the process to exit.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The exit code.</returns>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegProcess.DisposeAsync">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Links.EncoderLinkService">
+            <summary>
+            Default <see cref="T:SixBench.Services.Links.IEncoderLinkService"/>.
+            </summary>
+            <param name="links">Link repository.</param>
+            <param name="rokus">Roku repository.</param>
+            <param name="inventory">Device inventory (to default the video input).</param>
+            <param name="sessions">Session manager (to restart streams after changes).</param>
+        </member>
+        <member name="M:SixBench.Services.Links.EncoderLinkService.#ctor(SixBench.Data.Repositories.IEncoderLinkRepository,SixBench.Data.Repositories.IRokuDeviceRepository,SixBench.Services.Capture.IDeviceInventoryProvider,SixBench.Services.Streaming.ICaptureSessionManager)">
+            <summary>
+            Default <see cref="T:SixBench.Services.Links.IEncoderLinkService"/>.
+            </summary>
+            <param name="links">Link repository.</param>
+            <param name="rokus">Roku repository.</param>
+            <param name="inventory">Device inventory (to default the video input).</param>
+            <param name="sessions">Session manager (to restart streams after changes).</param>
+        </member>
+        <member name="M:SixBench.Services.Links.EncoderLinkService.ListAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Links.EncoderLinkService.GetAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Links.EncoderLinkService.UpsertAsync(System.String,SixBench.Common.Dtos.UpsertEncoderLinkRequest,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Links.EncoderLinkService.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Links.IEncoderLinkService">
+            <summary>
+            Manages encoder-to-Roku links.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Links.IEncoderLinkService.ListAsync(System.Threading.CancellationToken)">
+            <summary>Lists all links.</summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>All links.</returns>
+        </member>
+        <member name="M:SixBench.Services.Links.IEncoderLinkService.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Gets a link by capture-device stable id.</summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The link.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">No link exists.</exception>
+        </member>
+        <member name="M:SixBench.Services.Links.IEncoderLinkService.UpsertAsync(System.String,SixBench.Common.Dtos.UpsertEncoderLinkRequest,System.Threading.CancellationToken)">
+            <summary>
+            Creates or updates a link. Any running stream for the encoder is restarted to apply new settings.
+            </summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="request">Link values.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The saved link.</returns>
+        </member>
+        <member name="M:SixBench.Services.Links.IEncoderLinkService.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Deletes a link.</summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>True if deleted.</returns>
+        </member>
+        <member name="T:SixBench.Services.Mapping.DtoMappings">
+            <summary>
+            Entity → DTO conversions.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Mapping.DtoMappings.ToDto(SixBench.Data.Entities.RokuDevice)">
+            <summary>Maps a <see cref="T:SixBench.Data.Entities.RokuDevice"/> to its DTO.</summary>
+            <param name="entity">The entity.</param>
+            <returns>The DTO.</returns>
+        </member>
+        <member name="M:SixBench.Services.Mapping.DtoMappings.ToDto(SixBench.Data.Entities.EncoderLink)">
+            <summary>Maps an <see cref="T:SixBench.Data.Entities.EncoderLink"/> to its DTO.</summary>
+            <param name="entity">The entity (with <see cref="P:SixBench.Data.Entities.EncoderLink.RokuDevice"/> loaded when linked).</param>
+            <returns>The DTO.</returns>
+        </member>
+        <member name="T:SixBench.Services.Processes.IProcessRunner">
+            <summary>
+            Runs short-lived external commands and captures their output.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Processes.IProcessRunner.RunAsync(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.TimeSpan,System.Threading.CancellationToken)">
+            <summary>
+            Runs a command to completion.
+            </summary>
+            <param name="fileName">Executable to run.</param>
+            <param name="arguments">Arguments (passed without shell interpretation).</param>
+            <param name="timeout">Maximum run time; the process is killed when exceeded.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The exit code and captured output.</returns>
+        </member>
+        <member name="T:SixBench.Services.Processes.ProcessResult">
+            <summary>
+            Output of a completed process.
+            </summary>
+            <param name="ExitCode">Process exit code (-1 if it could not be started or timed out).</param>
+            <param name="StandardOutput">Captured stdout.</param>
+            <param name="StandardError">Captured stderr.</param>
+        </member>
+        <member name="M:SixBench.Services.Processes.ProcessResult.#ctor(System.Int32,System.String,System.String)">
+            <summary>
+            Output of a completed process.
+            </summary>
+            <param name="ExitCode">Process exit code (-1 if it could not be started or timed out).</param>
+            <param name="StandardOutput">Captured stdout.</param>
+            <param name="StandardError">Captured stderr.</param>
+        </member>
+        <member name="P:SixBench.Services.Processes.ProcessResult.ExitCode">
+            <summary>Process exit code (-1 if it could not be started or timed out).</summary>
+        </member>
+        <member name="P:SixBench.Services.Processes.ProcessResult.StandardOutput">
+            <summary>Captured stdout.</summary>
+        </member>
+        <member name="P:SixBench.Services.Processes.ProcessResult.StandardError">
+            <summary>Captured stderr.</summary>
+        </member>
+        <member name="T:SixBench.Services.Processes.ProcessRunner">
+            <summary>
+            Default <see cref="T:SixBench.Services.Processes.IProcessRunner"/> backed by <see cref="T:System.Diagnostics.Process"/>.
+            </summary>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Processes.ProcessRunner.#ctor(Microsoft.Extensions.Logging.ILogger{SixBench.Services.Processes.ProcessRunner})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Processes.IProcessRunner"/> backed by <see cref="T:System.Diagnostics.Process"/>.
+            </summary>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Processes.ProcessRunner.RunAsync(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.TimeSpan,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Roku.IRokuControlService">
+            <summary>
+            Sends remote-control input to a saved Roku.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuControlService.SendKeyAsync(System.Int32,SixBench.Common.Enums.RokuKey,SixBench.Common.Enums.KeyAction,System.Threading.CancellationToken)">
+            <summary>
+            Sends a key.
+            </summary>
+            <param name="rokuId">Saved device id.</param>
+            <param name="key">The key.</param>
+            <param name="action">Press, down or up.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>A task.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">No such device.</exception>
+            <exception cref="T:SixBench.Services.Exceptions.RokuUnreachableException">The device did not respond.</exception>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuControlService.SendTextAsync(System.Int32,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Types text into the on-screen keyboard, one character at a time.
+            </summary>
+            <param name="rokuId">Saved device id.</param>
+            <param name="text">The text.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>A task.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">No such device.</exception>
+            <exception cref="T:SixBench.Services.Exceptions.RokuUnreachableException">The device did not respond.</exception>
+        </member>
+        <member name="T:SixBench.Services.Roku.IRokuDeviceService">
+            <summary>
+            Manages the saved list of Roku devices.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuDeviceService.ListAsync(System.Threading.CancellationToken)">
+            <summary>Lists saved devices.</summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>All devices.</returns>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuDeviceService.GetAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Gets a saved device.</summary>
+            <param name="id">Device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The device.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">No such device.</exception>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuDeviceService.DiscoverAsync(System.Threading.CancellationToken)">
+            <summary>Discovers devices on the LAN and saves them (matched by serial number).</summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The devices found by this discovery.</returns>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuDeviceService.AddManualAsync(System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>Adds a device by IP after verifying it responds to ECP.</summary>
+            <param name="host">IP or host name.</param>
+            <param name="port">ECP port, or null for the default.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The saved device.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.RokuUnreachableException">The device did not respond.</exception>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuDeviceService.DeleteAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Deletes a saved device.</summary>
+            <param name="id">Device id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>True if deleted.</returns>
+        </member>
+        <member name="T:SixBench.Services.Roku.IRokuEcpClient">
+            <summary>
+            Low-level Roku External Control Protocol client (HTTP on port 8060).
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuEcpClient.GetDeviceInfoAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Queries <c>/query/device-info</c>.
+            </summary>
+            <param name="host">IP or host name.</param>
+            <param name="port">ECP port.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>Device info.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.RokuUnreachableException">The device did not respond.</exception>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuEcpClient.SendKeyAsync(System.String,System.Int32,SixBench.Common.Enums.RokuKey,SixBench.Common.Enums.KeyAction,System.Threading.CancellationToken)">
+            <summary>
+            Sends <c>/keypress</c>, <c>/keydown</c> or <c>/keyup</c>.
+            </summary>
+            <param name="host">IP or host name.</param>
+            <param name="port">ECP port.</param>
+            <param name="key">The key.</param>
+            <param name="action">Press, down or up.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>A task.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.RokuUnreachableException">The device did not respond.</exception>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuEcpClient.SendLiteralAsync(System.String,System.Int32,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Types one character via <c>/keypress/Lit_{char}</c>.
+            </summary>
+            <param name="host">IP or host name.</param>
+            <param name="port">ECP port.</param>
+            <param name="character">One Unicode scalar value, as a string.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>A task.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.RokuUnreachableException">The device did not respond.</exception>
+        </member>
+        <member name="T:SixBench.Services.Roku.RokuControlService">
+            <summary>
+            Default <see cref="T:SixBench.Services.Roku.IRokuControlService"/>. If a discovered Roku stops responding, it is rediscovered once
+            by serial number (DHCP may have given it a new address) and the command is retried.
+            </summary>
+            <param name="repository">Roku repository.</param>
+            <param name="ecp">ECP client.</param>
+            <param name="discovery">SSDP discovery.</param>
+            <param name="options">Roku options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuControlService.#ctor(SixBench.Data.Repositories.IRokuDeviceRepository,SixBench.Services.Roku.IRokuEcpClient,SixBench.Services.Roku.IRokuDiscoveryService,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.RokuOptions},Microsoft.Extensions.Logging.ILogger{SixBench.Services.Roku.RokuControlService})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Roku.IRokuControlService"/>. If a discovered Roku stops responding, it is rediscovered once
+            by serial number (DHCP may have given it a new address) and the command is retried.
+            </summary>
+            <param name="repository">Roku repository.</param>
+            <param name="ecp">ECP client.</param>
+            <param name="discovery">SSDP discovery.</param>
+            <param name="options">Roku options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuControlService.SendKeyAsync(System.Int32,SixBench.Common.Enums.RokuKey,SixBench.Common.Enums.KeyAction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuControlService.SendTextAsync(System.Int32,System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Roku.RokuDeviceInfo">
+            <summary>
+            Fields from the Roku ECP <c>/query/device-info</c> response.
+            </summary>
+            <param name="SerialNumber">Serial number.</param>
+            <param name="FriendlyName">Best available user-facing name.</param>
+            <param name="Model">Model name.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceInfo.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Fields from the Roku ECP <c>/query/device-info</c> response.
+            </summary>
+            <param name="SerialNumber">Serial number.</param>
+            <param name="FriendlyName">Best available user-facing name.</param>
+            <param name="Model">Model name.</param>
+        </member>
+        <member name="P:SixBench.Services.Roku.RokuDeviceInfo.SerialNumber">
+            <summary>Serial number.</summary>
+        </member>
+        <member name="P:SixBench.Services.Roku.RokuDeviceInfo.FriendlyName">
+            <summary>Best available user-facing name.</summary>
+        </member>
+        <member name="P:SixBench.Services.Roku.RokuDeviceInfo.Model">
+            <summary>Model name.</summary>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceInfo.Parse(System.String)">
+            <summary>
+            Parses the <c>device-info</c> XML document.
+            </summary>
+            <param name="xml">Response body.</param>
+            <returns>The parsed info.</returns>
+            <exception cref="T:System.FormatException">The XML has no serial number.</exception>
+        </member>
+        <member name="T:SixBench.Services.Roku.RokuDeviceService">
+            <summary>
+            Default <see cref="T:SixBench.Services.Roku.IRokuDeviceService"/>.
+            </summary>
+            <param name="repository">Roku repository.</param>
+            <param name="discovery">SSDP discovery.</param>
+            <param name="ecp">ECP client.</param>
+            <param name="options">Roku options.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceService.#ctor(SixBench.Data.Repositories.IRokuDeviceRepository,SixBench.Services.Roku.IRokuDiscoveryService,SixBench.Services.Roku.IRokuEcpClient,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.RokuOptions})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Roku.IRokuDeviceService"/>.
+            </summary>
+            <param name="repository">Roku repository.</param>
+            <param name="discovery">SSDP discovery.</param>
+            <param name="ecp">ECP client.</param>
+            <param name="options">Roku options.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceService.ListAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceService.GetAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceService.DiscoverAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceService.AddManualAsync(System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDeviceService.DeleteAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Roku.DiscoveredRoku">
+            <summary>
+            A Roku found on the network.
+            </summary>
+            <param name="Host">IP address.</param>
+            <param name="Port">ECP port.</param>
+            <param name="Info">Device info.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.DiscoveredRoku.#ctor(System.String,System.Int32,SixBench.Services.Roku.RokuDeviceInfo)">
+            <summary>
+            A Roku found on the network.
+            </summary>
+            <param name="Host">IP address.</param>
+            <param name="Port">ECP port.</param>
+            <param name="Info">Device info.</param>
+        </member>
+        <member name="P:SixBench.Services.Roku.DiscoveredRoku.Host">
+            <summary>IP address.</summary>
+        </member>
+        <member name="P:SixBench.Services.Roku.DiscoveredRoku.Port">
+            <summary>ECP port.</summary>
+        </member>
+        <member name="P:SixBench.Services.Roku.DiscoveredRoku.Info">
+            <summary>Device info.</summary>
+        </member>
+        <member name="T:SixBench.Services.Roku.IRokuDiscoveryService">
+            <summary>
+            Finds Roku devices on the LAN using SSDP.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Roku.IRokuDiscoveryService.DiscoverAsync(System.Threading.CancellationToken)">
+            <summary>
+            Sends an SSDP M-SEARCH and queries each responder's device info.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>Devices that responded.</returns>
+        </member>
+        <member name="T:SixBench.Services.Roku.RokuDiscoveryService">
+            <summary>
+            Default <see cref="T:SixBench.Services.Roku.IRokuDiscoveryService"/>.
+            </summary>
+            <param name="ecp">ECP client.</param>
+            <param name="options">Roku options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDiscoveryService.#ctor(SixBench.Services.Roku.IRokuEcpClient,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.RokuOptions},Microsoft.Extensions.Logging.ILogger{SixBench.Services.Roku.RokuDiscoveryService})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Roku.IRokuDiscoveryService"/>.
+            </summary>
+            <param name="ecp">ECP client.</param>
+            <param name="options">Roku options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuDiscoveryService.DiscoverAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Roku.RokuEcpClient">
+            <summary>
+            Typed-<see cref="T:System.Net.Http.HttpClient"/> implementation of <see cref="T:SixBench.Services.Roku.IRokuEcpClient"/>.
+            </summary>
+            <param name="http">HTTP client (timeout configured at registration).</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuEcpClient.#ctor(System.Net.Http.HttpClient)">
+            <summary>
+            Typed-<see cref="T:System.Net.Http.HttpClient"/> implementation of <see cref="T:SixBench.Services.Roku.IRokuEcpClient"/>.
+            </summary>
+            <param name="http">HTTP client (timeout configured at registration).</param>
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuEcpClient.GetDeviceInfoAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuEcpClient.SendKeyAsync(System.String,System.Int32,SixBench.Common.Enums.RokuKey,SixBench.Common.Enums.KeyAction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuEcpClient.SendLiteralAsync(System.String,System.Int32,System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Roku.RokuEcpClient.BuildUri(System.String,System.Int32,System.String)">
+            <summary>
+            Builds an ECP URL.
+            </summary>
+            <param name="host">IP or host name.</param>
+            <param name="port">ECP port.</param>
+            <param name="path">Path relative to the ECP root (already escaped).</param>
+            <returns>The URL.</returns>
+        </member>
+        <member name="T:SixBench.Services.Roku.SsdpResponseParser">
+            <summary>
+            Parses SSDP (HTTP-over-UDP) responses to a <c>roku:ecp</c> M-SEARCH.
+            </summary>
+        </member>
+        <member name="F:SixBench.Services.Roku.SsdpResponseParser.RokuSearchRequest">
+            <summary>The M-SEARCH request for Roku devices.</summary>
+        </member>
+        <member name="M:SixBench.Services.Roku.SsdpResponseParser.ParseLocation(System.String)">
+            <summary>
+            Extracts the ECP base address from an SSDP response.
+            </summary>
+            <param name="response">The raw response text.</param>
+            <returns>The location (e.g. <c>http://192.168.1.20:8060/</c>), or null if this is not a Roku ECP response.</returns>
+        </member>
+        <member name="T:SixBench.Services.ServiceCollectionExtensions">
+            <summary>
+            Registers the SixBench business services.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.ServiceCollectionExtensions.AddSixBenchServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds options, capture, streaming and Roku services.
+            </summary>
+            <param name="services">The service collection.</param>
+            <param name="configuration">App configuration.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.AccessUnit">
+            <summary>
+            One H.264 access unit (a complete coded picture) in Annex-B format, starting with its start code.
+            </summary>
+            <param name="Data">Annex-B bytes for every NAL unit in the access unit.</param>
+            <param name="IsKeyframe">True when the access unit contains an IDR slice (decoding can start here).</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.AccessUnit.#ctor(System.Byte[],System.Boolean)">
+            <summary>
+            One H.264 access unit (a complete coded picture) in Annex-B format, starting with its start code.
+            </summary>
+            <param name="Data">Annex-B bytes for every NAL unit in the access unit.</param>
+            <param name="IsKeyframe">True when the access unit contains an IDR slice (decoding can start here).</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.AccessUnit.Data">
+            <summary>Annex-B bytes for every NAL unit in the access unit.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.AccessUnit.IsKeyframe">
+            <summary>True when the access unit contains an IDR slice (decoding can start here).</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.AnnexBParser">
+            <summary>
+            Incrementally splits an H.264 Annex-B byte stream into access units.
+            </summary>
+            <remarks>
+            A new access unit begins at an AUD, SPS, PPS or SEI NAL, or at a slice whose <c>first_mb_in_slice</c> is 0,
+            once the current unit already contains a picture slice. Because a unit is only known to be complete when
+            the next one starts, output lags input by one frame.
+            The latest SPS/PPS are cached and inserted ahead of any IDR that lacks them, so every keyframe
+            unit can start a fresh decoder.
+            </remarks>
+        </member>
+        <member name="M:SixBench.Services.Streaming.AnnexBParser.Push(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Appends bytes and returns any access units completed by them.
+            </summary>
+            <param name="data">The next chunk of the stream.</param>
+            <returns>Completed access units, in order.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.AnnexBParser.Flush">
+            <summary>
+            Completes the final NAL unit and access unit at end of stream.
+            </summary>
+            <returns>The last access unit, if any.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.IAudioPolicy">
+            <summary>
+            Decides what audio a session may use.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.IAudioPolicy.Evaluate(SixBench.Data.Entities.EncoderLink,System.String)">
+            <summary>
+            Computes the audio grant for an encoder.
+            </summary>
+            <param name="link">The encoder link, if any.</param>
+            <param name="audioInput">The resolved audio input, if any.</param>
+            <returns>The grant sent to clients.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.AudioPolicy">
+            <summary>
+            Device audio requires the global switch, the link's flag and an audio input.
+            The microphone uplink is never granted: Roku has no documented way to accept audio input.
+            </summary>
+            <param name="options">Audio options.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.AudioPolicy.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{SixBench.Common.Options.AudioOptions})">
+            <summary>
+            Device audio requires the global switch, the link's flag and an audio input.
+            The microphone uplink is never granted: Roku has no documented way to accept audio input.
+            </summary>
+            <param name="options">Audio options.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.AudioPolicy.Evaluate(SixBench.Data.Entities.EncoderLink,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Streaming.AudioToggleResult">
+            <summary>
+            Result of toggling device audio for a subscriber.
+            </summary>
+        </member>
+        <member name="F:SixBench.Services.Streaming.AudioToggleResult.Ok">
+            <summary>The change was applied.</summary>
+        </member>
+        <member name="F:SixBench.Services.Streaming.AudioToggleResult.NotPermitted">
+            <summary>Device audio is not permitted for this encoder.</summary>
+        </member>
+        <member name="F:SixBench.Services.Streaming.AudioToggleResult.Ended">
+            <summary>The session has ended.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.CaptureSession">
+            <summary>
+            One capture device being streamed: a single ffmpeg video pipeline (and an on-demand audio pipeline)
+            fanned out to any number of <see cref="T:SixBench.Services.Streaming.StreamSubscriber"/>s.
+            </summary>
+            <remarks>
+            USB capture devices only allow one reader, so there is exactly one session per device.
+            The session caches every access unit since the most recent keyframe (the current GOP), so new
+            clients and clients recovering from a decode error can start decoding immediately.
+            </remarks>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.#ctor(SixBench.Services.Capture.CaptureSource,SixBench.Services.Streaming.IMediaSourceFactory,SixBench.Common.Options.StreamingOptions,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Creates a session; call <see cref="M:SixBench.Services.Streaming.CaptureSession.Start"/> to begin capture.
+            </summary>
+            <param name="source">What to capture.</param>
+            <param name="factory">Media source factory.</param>
+            <param name="options">Streaming options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="E:SixBench.Services.Streaming.CaptureSession.Ended">
+            <summary>Raised once when the session ends for any reason.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.CaptureSession.Source">
+            <summary>What is being captured.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.CaptureSession.StartedUtc">
+            <summary>When capture started.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.CaptureSession.IsEnded">
+            <summary>Whether the session has ended.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.CaptureSession.SubscriberCount">
+            <summary>Number of connected subscribers.</summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.Start">
+            <summary>
+            Starts the video pipeline.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.Subscribe">
+            <summary>
+            Adds a subscriber and queues the cached GOP for it.
+            </summary>
+            <returns>The new subscriber.</returns>
+            <exception cref="T:System.InvalidOperationException">The session has ended.</exception>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.Unsubscribe(SixBench.Services.Streaming.StreamSubscriber)">
+            <summary>
+            Removes a subscriber.
+            </summary>
+            <param name="subscriber">The subscriber.</param>
+            <returns>The number of remaining subscribers.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.RequestKeyframe(SixBench.Services.Streaming.StreamSubscriber)">
+            <summary>
+            Resends the cached GOP to a subscriber (after a client decode error).
+            </summary>
+            <param name="subscriber">The subscriber.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.SetAudio(SixBench.Services.Streaming.StreamSubscriber,System.Boolean)">
+            <summary>
+            Turns device audio on or off for a subscriber, starting or stopping the audio pipeline as needed.
+            </summary>
+            <param name="subscriber">The subscriber.</param>
+            <param name="enabled">Desired state.</param>
+            <returns>The outcome.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.GetSnapshot">
+            <summary>
+            Returns diagnostics for this session.
+            </summary>
+            <returns>The session snapshot.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.StopAsync(System.String,System.String)">
+            <summary>
+            Ends the session, notifying subscribers with <paramref name="reason"/>, and stops capture.
+            </summary>
+            <param name="reason">Reason sent in <c>stream_ended</c>.</param>
+            <param name="message">Optional detail.</param>
+            <returns>A task that completes when capture has stopped.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSession.DisposeAsync">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Streaming.CaptureLease">
+            <summary>
+            A subscriber's hold on a capture session; return it with <see cref="M:SixBench.Services.Streaming.ICaptureSessionManager.ReleaseAsync(SixBench.Services.Streaming.CaptureLease)"/>.
+            </summary>
+            <param name="Session">The session.</param>
+            <param name="Subscriber">This client's subscriber.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureLease.#ctor(SixBench.Services.Streaming.CaptureSession,SixBench.Services.Streaming.StreamSubscriber)">
+            <summary>
+            A subscriber's hold on a capture session; return it with <see cref="M:SixBench.Services.Streaming.ICaptureSessionManager.ReleaseAsync(SixBench.Services.Streaming.CaptureLease)"/>.
+            </summary>
+            <param name="Session">The session.</param>
+            <param name="Subscriber">This client's subscriber.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.CaptureLease.Session">
+            <summary>The session.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.CaptureLease.Subscriber">
+            <summary>This client's subscriber.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.ICaptureSessionManager">
+            <summary>
+            Owns the capture sessions: one per device, started on first use and stopped after an idle period.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.ICaptureSessionManager.AcquireAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Subscribes to a device's stream, starting capture if needed.
+            </summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The lease.</returns>
+            <exception cref="T:SixBench.Services.Exceptions.NotFoundException">The device is not connected.</exception>
+        </member>
+        <member name="M:SixBench.Services.Streaming.ICaptureSessionManager.ReleaseAsync(SixBench.Services.Streaming.CaptureLease)">
+            <summary>
+            Unsubscribes; capture stops after the idle timeout when no subscribers remain.
+            </summary>
+            <param name="lease">The lease from <see cref="M:SixBench.Services.Streaming.ICaptureSessionManager.AcquireAsync(System.String,System.Threading.CancellationToken)"/>.</param>
+            <returns>A task.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.ICaptureSessionManager.RestartAsync(System.String,System.String)">
+            <summary>
+            Ends a device's session (clients receive <c>stream_ended</c> and reconnect with new settings).
+            </summary>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="reason">Reason sent to clients.</param>
+            <returns>A task.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.ICaptureSessionManager.GetSessions">
+            <summary>
+            Returns diagnostics for all active sessions.
+            </summary>
+            <returns>Session snapshots.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.CaptureSessionManager">
+            <summary>
+            Default <see cref="T:SixBench.Services.Streaming.ICaptureSessionManager"/>. Registered as a singleton and hosted service so that
+            all ffmpeg processes are stopped on shutdown.
+            </summary>
+            <param name="scopeFactory">Scope factory (device resolution uses scoped repositories).</param>
+            <param name="factory">Media source factory.</param>
+            <param name="options">Streaming options.</param>
+            <param name="timeProvider">Clock for idle timers.</param>
+            <param name="loggerFactory">Logger factory.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,SixBench.Services.Streaming.IMediaSourceFactory,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.StreamingOptions},System.TimeProvider,Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            Default <see cref="T:SixBench.Services.Streaming.ICaptureSessionManager"/>. Registered as a singleton and hosted service so that
+            all ffmpeg processes are stopped on shutdown.
+            </summary>
+            <param name="scopeFactory">Scope factory (device resolution uses scoped repositories).</param>
+            <param name="factory">Media source factory.</param>
+            <param name="options">Streaming options.</param>
+            <param name="timeProvider">Clock for idle timers.</param>
+            <param name="loggerFactory">Logger factory.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.AcquireAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.ReleaseAsync(SixBench.Services.Streaming.CaptureLease)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.RestartAsync(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.GetSessions">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.StartAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.CaptureSessionManager.StopAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Streaming.StreamJson">
+            <summary>
+            JSON settings for stream-socket control messages (snake_case, e.g. <c>audio_grant</c>).
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamJson.Options">
+            <summary>Serializer options for control messages.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.HelloMessage">
+            <summary>Server → client: session established.</summary>
+            <param name="SessionId">This client's id.</param>
+            <param name="StableId">Encoder being streamed.</param>
+            <param name="Name">Encoder display name.</param>
+            <param name="AudioGrant">What audio the server permits.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.HelloMessage.#ctor(System.String,System.String,System.String,SixBench.Services.Capture.AudioGrant)">
+            <summary>Server → client: session established.</summary>
+            <param name="SessionId">This client's id.</param>
+            <param name="StableId">Encoder being streamed.</param>
+            <param name="Name">Encoder display name.</param>
+            <param name="AudioGrant">What audio the server permits.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.HelloMessage.SessionId">
+            <summary>This client's id.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.HelloMessage.StableId">
+            <summary>Encoder being streamed.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.HelloMessage.Name">
+            <summary>Encoder display name.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.HelloMessage.AudioGrant">
+            <summary>What audio the server permits.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.HelloMessage.Type">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.AudioStateMessage">
+            <summary>Server → client: device audio was turned on or off.</summary>
+            <param name="Enabled">Whether device audio is now flowing to this client.</param>
+            <param name="Error">Error code when audio stopped unexpectedly.</param>
+            <param name="Message">Human-readable detail.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.AudioStateMessage.#ctor(System.Boolean,System.String,System.String)">
+            <summary>Server → client: device audio was turned on or off.</summary>
+            <param name="Enabled">Whether device audio is now flowing to this client.</param>
+            <param name="Error">Error code when audio stopped unexpectedly.</param>
+            <param name="Message">Human-readable detail.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.AudioStateMessage.Enabled">
+            <summary>Whether device audio is now flowing to this client.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.AudioStateMessage.Error">
+            <summary>Error code when audio stopped unexpectedly.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.AudioStateMessage.Message">
+            <summary>Human-readable detail.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.AudioStateMessage.Type">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.MicClaimResultMessage">
+            <summary>Server → client: response to <c>mic_claim</c>.</summary>
+            <param name="Granted">Whether the client now holds the microphone.</param>
+            <param name="Reason">Error code when not granted.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.MicClaimResultMessage.#ctor(System.Boolean,System.String)">
+            <summary>Server → client: response to <c>mic_claim</c>.</summary>
+            <param name="Granted">Whether the client now holds the microphone.</param>
+            <param name="Reason">Error code when not granted.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.MicClaimResultMessage.Granted">
+            <summary>Whether the client now holds the microphone.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.MicClaimResultMessage.Reason">
+            <summary>Error code when not granted.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.MicClaimResultMessage.Type">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.ErrorMessage">
+            <summary>Server → client: an error.</summary>
+            <param name="Code">Error code from <see cref="T:SixBench.Common.Streaming.StreamProtocol.ErrorCodes"/>.</param>
+            <param name="Message">Human-readable detail.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.ErrorMessage.#ctor(System.String,System.String)">
+            <summary>Server → client: an error.</summary>
+            <param name="Code">Error code from <see cref="T:SixBench.Common.Streaming.StreamProtocol.ErrorCodes"/>.</param>
+            <param name="Message">Human-readable detail.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.ErrorMessage.Code">
+            <summary>Error code from <see cref="T:SixBench.Common.Streaming.StreamProtocol.ErrorCodes"/>.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.ErrorMessage.Message">
+            <summary>Human-readable detail.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.ErrorMessage.Type">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.StreamEndedMessage">
+            <summary>Server → client: the capture pipeline ended and the socket will close.</summary>
+            <param name="Reason">Why: <c>capture_failed</c>, <c>settings_changed</c>, <c>shutdown</c>.</param>
+            <param name="Message">Human-readable detail (e.g. ffmpeg's last error lines).</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamEndedMessage.#ctor(System.String,System.String)">
+            <summary>Server → client: the capture pipeline ended and the socket will close.</summary>
+            <param name="Reason">Why: <c>capture_failed</c>, <c>settings_changed</c>, <c>shutdown</c>.</param>
+            <param name="Message">Human-readable detail (e.g. ffmpeg's last error lines).</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamEndedMessage.Reason">
+            <summary>Why: <c>capture_failed</c>, <c>settings_changed</c>, <c>shutdown</c>.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamEndedMessage.Message">
+            <summary>Human-readable detail (e.g. ffmpeg's last error lines).</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamEndedMessage.Type">
+            <summary>Message type.</summary>
+        </member>
+        <member name="T:SixBench.Services.Streaming.IVideoSource">
+            <summary>
+            A live source of H.264 access units.
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.IVideoSource.FailureReason">
+            <summary>Why the source stopped, when it stopped on its own.</summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.IVideoSource.ReadAsync(System.Threading.CancellationToken)">
+            <summary>
+            Starts capture and yields access units until the source ends or <paramref name="ct"/> is cancelled.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>Access units.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.IAudioSource">
+            <summary>
+            A live source of Opus packets (48 kHz stereo, 20 ms).
+            </summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.IAudioSource.FailureReason">
+            <summary>Why the source stopped, when it stopped on its own.</summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.IAudioSource.ReadAsync(System.Threading.CancellationToken)">
+            <summary>
+            Starts capture and yields Opus packets until the source ends or <paramref name="ct"/> is cancelled.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>Opus packets.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.IMediaSourceFactory">
+            <summary>
+            Creates media sources for a capture device. Swapped for fakes in tests.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.IMediaSourceFactory.CreateVideo(SixBench.Services.Capture.CaptureSource)">
+            <summary>Creates a video source.</summary>
+            <param name="source">Capture source.</param>
+            <returns>An unstarted video source.</returns>
+        </member>
+        <member name="M:SixBench.Services.Streaming.IMediaSourceFactory.CreateAudio(SixBench.Services.Capture.CaptureSource)">
+            <summary>Creates an audio source.</summary>
+            <param name="source">Capture source (must have an audio input).</param>
+            <returns>An unstarted audio source.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.FfmpegMediaSourceFactory">
+            <summary>
+            ffmpeg-backed <see cref="T:SixBench.Services.Streaming.IMediaSourceFactory"/>.
+            </summary>
+            <param name="ffmpegOptions">ffmpeg options.</param>
+            <param name="audioOptions">Audio options.</param>
+            <param name="loggerFactory">Logger factory.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegMediaSourceFactory.#ctor(Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.FfmpegOptions},Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.AudioOptions},Microsoft.Extensions.Logging.ILoggerFactory)">
+            <summary>
+            ffmpeg-backed <see cref="T:SixBench.Services.Streaming.IMediaSourceFactory"/>.
+            </summary>
+            <param name="ffmpegOptions">ffmpeg options.</param>
+            <param name="audioOptions">Audio options.</param>
+            <param name="loggerFactory">Logger factory.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegMediaSourceFactory.CreateVideo(SixBench.Services.Capture.CaptureSource)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegMediaSourceFactory.CreateAudio(SixBench.Services.Capture.CaptureSource)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Streaming.FfmpegVideoSource">
+            <summary>
+            Runs ffmpeg and splits its H.264 stdout into access units.
+            </summary>
+            <param name="ffmpegPath">ffmpeg executable.</param>
+            <param name="arguments">ffmpeg arguments.</param>
+            <param name="name">Name for logs.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegVideoSource.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Runs ffmpeg and splits its H.264 stdout into access units.
+            </summary>
+            <param name="ffmpegPath">ffmpeg executable.</param>
+            <param name="arguments">ffmpeg arguments.</param>
+            <param name="name">Name for logs.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.FfmpegVideoSource.FailureReason">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegVideoSource.ReadAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegVideoSource.DisposeAsync">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Streaming.FfmpegAudioSource">
+            <summary>
+            Runs ffmpeg and extracts Opus packets from its Ogg stdout.
+            </summary>
+            <param name="ffmpegPath">ffmpeg executable.</param>
+            <param name="arguments">ffmpeg arguments.</param>
+            <param name="name">Name for logs.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegAudioSource.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Runs ffmpeg and extracts Opus packets from its Ogg stdout.
+            </summary>
+            <param name="ffmpegPath">ffmpeg executable.</param>
+            <param name="arguments">ffmpeg arguments.</param>
+            <param name="name">Name for logs.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.FfmpegAudioSource.FailureReason">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegAudioSource.ReadAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.FfmpegAudioSource.DisposeAsync">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Services.Streaming.OggOpusParser">
+            <summary>
+            Incrementally extracts Opus packets from an Ogg byte stream (as written by ffmpeg's ogg muxer).
+            The OpusHead and OpusTags header packets are skipped.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.OggOpusParser.Push(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Appends bytes and returns any Opus packets completed by them.
+            </summary>
+            <param name="data">The next chunk of the stream.</param>
+            <returns>Completed Opus packets, in order.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.IStreamSocketHandler">
+            <summary>
+            Runs the stream WebSocket protocol for one browser connection.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.IStreamSocketHandler.HandleAsync(System.Net.WebSockets.WebSocket,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Streams the device to the socket until either side closes.
+            </summary>
+            <param name="socket">An accepted WebSocket.</param>
+            <param name="stableId">Capture device stable id.</param>
+            <param name="ct">Request-aborted token.</param>
+            <returns>A task that completes when the connection is finished.</returns>
+        </member>
+        <member name="T:SixBench.Services.Streaming.StreamSocketHandler">
+            <summary>
+            Default <see cref="T:SixBench.Services.Streaming.IStreamSocketHandler"/>.
+            Binary frames to the client are H.264 access units or <c>VA</c>-prefixed Opus packets;
+            text frames are JSON control messages (see <see cref="T:SixBench.Common.Streaming.StreamProtocol"/>).
+            </summary>
+            <param name="manager">Session manager.</param>
+            <param name="options">Streaming options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamSocketHandler.#ctor(SixBench.Services.Streaming.ICaptureSessionManager,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.StreamingOptions},Microsoft.Extensions.Logging.ILogger{SixBench.Services.Streaming.StreamSocketHandler})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Streaming.IStreamSocketHandler"/>.
+            Binary frames to the client are H.264 access units or <c>VA</c>-prefixed Opus packets;
+            text frames are JSON control messages (see <see cref="T:SixBench.Common.Streaming.StreamProtocol"/>).
+            </summary>
+            <param name="manager">Session manager.</param>
+            <param name="options">Streaming options.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamSocketHandler.HandleAsync(System.Net.WebSockets.WebSocket,System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamSocketHandler.HandleControlMessage(SixBench.Services.Streaming.CaptureSession,SixBench.Services.Streaming.StreamSubscriber,System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Applies one JSON control message from the client.
+            </summary>
+            <param name="session">The session.</param>
+            <param name="subscriber">The client.</param>
+            <param name="utf8Json">The message.</param>
+        </member>
+        <member name="T:SixBench.Services.Streaming.StreamSubscriber">
+            <summary>
+            One connected browser's view of a capture session: a bounded media queue and an unbounded control queue.
+            </summary>
+            <remarks>
+            When the media queue overflows (slow client), the queued frames are discarded and the subscriber
+            waits for the next keyframe. Dropping individual delta frames would corrupt the decoder.
+            All Offer/Replay methods are called by <see cref="T:SixBench.Services.Streaming.CaptureSession"/> while it holds its lock.
+            </remarks>
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamSubscriber.#ctor(System.String,System.Int32)">
+            <summary>
+            Creates a subscriber.
+            </summary>
+            <param name="id">Client id.</param>
+            <param name="queueCapacity">Maximum queued media messages.</param>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamSubscriber.Id">
+            <summary>Client id.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamSubscriber.Media">
+            <summary>Video and audio messages to send, in order.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamSubscriber.Control">
+            <summary>JSON control messages to send.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamSubscriber.AudioEnabled">
+            <summary>Whether this client receives device audio.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamSubscriber.ServerDroppedFrames">
+            <summary>Frames dropped by the server for this client.</summary>
+        </member>
+        <member name="P:SixBench.Services.Streaming.StreamSubscriber.LastStats">
+            <summary>The most recent stats reported by the client.</summary>
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamSubscriber.SendControl``1(``0)">
+            <summary>
+            Queues a JSON control message.
+            </summary>
+            <typeparam name="T">Message type.</typeparam>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:SixBench.Services.Streaming.StreamSubscriber.UpdateStats(System.String,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int64})">
+            <summary>
+            Records stats reported by the client.
+            </summary>
+            <param name="decoder">Decoder name.</param>
+            <param name="fps">Rendered fps.</param>
+            <param name="jitterMs">Arrival jitter.</param>
+            <param name="droppedFrames">Client-side drops.</param>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the AvFoundationDeviceLine method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.AvFoundationDeviceLine_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.DshowDeviceLine_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the DshowDeviceLine method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowDeviceLine_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.DshowAlternativeName_2">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the DshowAlternativeName method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.DshowAlternativeName_2.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ArecordLine_3">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the ArecordLine method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.ArecordLine_3.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ArecordLine_3.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EncoderLine_4">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the EncoderLine method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.EncoderLine_4.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
+            <summary>Pushes 2 values onto the backtracking stack.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_45C2B33BF1328C70DF65C6377180B32A62FDE3BDF5FC5F6E93021B3698E64DD5">
+            <summary>Supports searching for the string "Alternative name".</summary>
+        </member>
+    </members>
+</doc>

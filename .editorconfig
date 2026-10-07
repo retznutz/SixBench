@@ -1,0 +1,21 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,ts,vue,js,mjs,cjs,css,html,md,props,csproj,slnx}]
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+
+# EF Core generated migrations carry no XML docs.
+[src/SixBench.Data/Migrations/**.cs]
+dotnet_diagnostic.CS1591.severity = none
+generated_code = true
