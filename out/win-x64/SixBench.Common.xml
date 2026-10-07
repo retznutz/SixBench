@@ -484,7 +484,10 @@
             <summary>Path to the ffmpeg executable, or just <c>ffmpeg</c> to use PATH.</summary>
         </member>
         <member name="P:SixBench.Common.Options.FfmpegOptions.VideoEncoder">
-            <summary>H.264 encoder: <c>libx264</c>, <c>h264_videotoolbox</c>, <c>h264_nvenc</c>, <c>h264_qsv</c> or <c>h264_vaapi</c>.</summary>
+            <summary>
+            H.264 encoder: <c>libx264</c>, <c>h264_videotoolbox</c>, <c>h264_nvenc</c>, <c>h264_qsv</c>, <c>h264_amf</c>
+            or <c>h264_vaapi</c> get tuned low-latency settings; any other encoder name is passed through as-is.
+            </summary>
         </member>
         <member name="P:SixBench.Common.Options.FfmpegOptions.ExtraEncoderArgs">
             <summary>Extra encoder arguments appended after the defaults (space separated).</summary>

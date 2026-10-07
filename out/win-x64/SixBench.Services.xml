@@ -578,6 +578,119 @@
             <returns>The argument list.</returns>
             <exception cref="T:System.InvalidOperationException">The source has no audio input.</exception>
         </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegCapabilityReport">
+            <summary>
+            What the installed ffmpeg can do, as far as SixBench cares.
+            </summary>
+            <param name="Runnable">ffmpeg started and listed its encoders.</param>
+            <param name="VideoEncoder">The configured video encoder.</param>
+            <param name="HasVideoEncoder">The configured video encoder is available.</param>
+            <param name="HasOpus">libopus is available (needed for device audio).</param>
+            <param name="AvailableH264Encoders">Every H.264 encoder this build offers.</param>
+            <param name="Problem">A human-readable description of what is wrong, or null.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.#ctor(System.Boolean,System.String,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+            <summary>
+            What the installed ffmpeg can do, as far as SixBench cares.
+            </summary>
+            <param name="Runnable">ffmpeg started and listed its encoders.</param>
+            <param name="VideoEncoder">The configured video encoder.</param>
+            <param name="HasVideoEncoder">The configured video encoder is available.</param>
+            <param name="HasOpus">libopus is available (needed for device audio).</param>
+            <param name="AvailableH264Encoders">Every H.264 encoder this build offers.</param>
+            <param name="Problem">A human-readable description of what is wrong, or null.</param>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.Runnable">
+            <summary>ffmpeg started and listed its encoders.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.VideoEncoder">
+            <summary>The configured video encoder.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.HasVideoEncoder">
+            <summary>The configured video encoder is available.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.HasOpus">
+            <summary>libopus is available (needed for device audio).</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.AvailableH264Encoders">
+            <summary>Every H.264 encoder this build offers.</summary>
+        </member>
+        <member name="P:SixBench.Services.Ffmpeg.FfmpegCapabilityReport.Problem">
+            <summary>A human-readable description of what is wrong, or null.</summary>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.IFfmpegCapabilities">
+            <summary>
+            Checks the installed ffmpeg once and caches the result.
+            </summary>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.IFfmpegCapabilities.GetAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns the (cached) capability report.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The report.</returns>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegCapabilities">
+            <summary>
+            Default <see cref="T:SixBench.Services.Ffmpeg.IFfmpegCapabilities"/>, based on <c>ffmpeg -encoders</c>.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.#ctor(SixBench.Services.Processes.IProcessRunner,Microsoft.Extensions.Options.IOptions{SixBench.Common.Options.FfmpegOptions})">
+            <summary>
+            Default <see cref="T:SixBench.Services.Ffmpeg.IFfmpegCapabilities"/>, based on <c>ffmpeg -encoders</c>.
+            </summary>
+            <param name="runner">Process runner.</param>
+            <param name="options">ffmpeg options.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.GetAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.Evaluate(System.String,System.String,SixBench.Services.Processes.ProcessResult)">
+            <summary>
+            Builds a report from <c>ffmpeg -encoders</c> output.
+            </summary>
+            <param name="ffmpegPath">The configured ffmpeg path (for messages).</param>
+            <param name="videoEncoder">The configured video encoder.</param>
+            <param name="result">The process result.</param>
+            <returns>The report.</returns>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegCapabilities.EncoderLine">
+            <remarks>
+            Pattern:<br/>
+            <code>^\\s*(?&lt;kind&gt;[VAS])[A-Z.]{5}\\s+(?&lt;name&gt;\\S+)\\s</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match if at the beginning of the string.<br/>
+            ○ Match a whitespace character atomically any number of times.<br/>
+            ○ "kind" capture group.<br/>
+                ○ Match a character in the set [ASV].<br/>
+            ○ Match a character in the set [.A-Z] exactly 5 times.<br/>
+            ○ Match a whitespace character atomically at least once.<br/>
+            ○ "name" capture group.<br/>
+                ○ Match any character other than a whitespace character atomically at least once.<br/>
+            ○ Match a whitespace character.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:SixBench.Services.Ffmpeg.FfmpegStartupCheck">
+            <summary>
+            Logs ffmpeg problems at startup so a missing encoder is obvious before anyone presses Watch.
+            </summary>
+            <param name="capabilities">Capability checker.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegStartupCheck.#ctor(SixBench.Services.Ffmpeg.IFfmpegCapabilities,Microsoft.Extensions.Logging.ILogger{SixBench.Services.Ffmpeg.FfmpegStartupCheck})">
+            <summary>
+            Logs ffmpeg problems at startup so a missing encoder is obvious before anyone presses Watch.
+            </summary>
+            <param name="capabilities">Capability checker.</param>
+            <param name="logger">Logger.</param>
+        </member>
+        <member name="M:SixBench.Services.Ffmpeg.FfmpegStartupCheck.ExecuteAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
         <member name="T:SixBench.Services.Ffmpeg.FfmpegProcess">
             <summary>
             A long-running ffmpeg child process whose stdout carries media data.
@@ -1797,6 +1910,38 @@
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.ArecordLine_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EncoderLine_4">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the EncoderLine method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.EncoderLine_4.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EncoderLine_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
             <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if the regular expression matches at the current position; otherwise, false.</returns>

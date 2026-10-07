@@ -211,6 +211,36 @@
         <member name="M:SixBench.Api.Infrastructure.ConfigureSwaggerOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
             <inheritdoc />
         </member>
+        <member name="T:SixBench.Api.Infrastructure.FfmpegHealthCheck">
+            <summary>
+            Reports whether ffmpeg is installed with the configured encoder.
+            Unhealthy when ffmpeg or the video encoder is missing; degraded when only libopus is missing.
+            </summary>
+            <param name="capabilities">Capability checker.</param>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.FfmpegHealthCheck.#ctor(SixBench.Services.Ffmpeg.IFfmpegCapabilities)">
+            <summary>
+            Reports whether ffmpeg is installed with the configured encoder.
+            Unhealthy when ffmpeg or the video encoder is missing; degraded when only libopus is missing.
+            </summary>
+            <param name="capabilities">Capability checker.</param>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.FfmpegHealthCheck.CheckHealthAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SixBench.Api.Infrastructure.HealthResponseWriter">
+            <summary>
+            Writes health results as JSON with one entry per check, so problems such as a missing ffmpeg encoder are visible.
+            </summary>
+        </member>
+        <member name="M:SixBench.Api.Infrastructure.HealthResponseWriter.WriteAsync(Microsoft.AspNetCore.Http.HttpContext,Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport)">
+            <summary>
+            Writes the health report.
+            </summary>
+            <param name="context">HTTP context.</param>
+            <param name="report">Health report.</param>
+            <returns>A task.</returns>
+        </member>
         <member name="T:SixBench.Api.Infrastructure.RouteKeys">
             <summary>
             Helpers for decoding route keys.

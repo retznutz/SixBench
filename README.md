@@ -72,6 +72,7 @@ WebCodecs only works in a **secure context**. `http://localhost` qualifies, but 
 
 | Section | Key | Default | Notes |
 |---|---|---|---|
+| `Kestrel` | `Endpoints:Http:Url` | `http://*:5216` | Listens on all interfaces. Change the port here; this overrides `launchSettings.json` and `ASPNETCORE_URLS`. If you change it, set `NUXT_API_DEV_TARGET` for `npm run dev`. |
 | `ConnectionStrings` | `SixBench` | `Data Source=data/sixbench.db` | Relative paths resolve against the content root. Migrations run at startup. |
 | `Ffmpeg` | `Path` | `ffmpeg` | Executable path. |
 | | `VideoEncoder` | `libx264` | Also `h264_videotoolbox`, `h264_nvenc`, `h264_qsv`, `h264_vaapi`. |
