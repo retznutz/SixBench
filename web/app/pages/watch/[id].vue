@@ -98,7 +98,7 @@ onBeforeUnmount(() => stream.disconnect())
       </div>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <div class="space-y-3">
         <VideoSurface ref="surface" :key="decoder" :decoder="decoder" @retry="start" />
       </div>

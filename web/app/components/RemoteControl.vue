@@ -46,9 +46,9 @@ function press(key: RokuKey) {
 
 <template>
   <section class="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4" aria-label="Roku remote">
-    <header class="mb-4 flex items-center justify-between gap-2">
+    <header class="mb-4 flex min-w-0 items-baseline justify-between gap-2">
       <h2 class="text-sm font-medium text-zinc-300">Remote</h2>
-      <span v-if="rokuName" class="truncate text-xs text-zinc-500">{{ rokuName }}</span>
+      <span v-if="rokuName" class="min-w-0 truncate text-xs text-zinc-500" :title="rokuName">{{ rokuName }}</span>
     </header>
 
     <Message v-if="disabled" severity="warn" size="small" class="mb-4">
@@ -56,21 +56,27 @@ function press(key: RokuKey) {
       <NuxtLink to="/settings" class="underline">Link one in Settings</NuxtLink>.
     </Message>
 
-    <fieldset :disabled="disabled" class="flex flex-col items-center gap-4" :class="{ 'opacity-50': disabled }">
-      <div class="grid w-full grid-cols-3 gap-2">
+    <fieldset
+      :disabled="disabled"
+      class="mx-auto flex w-44 flex-col items-stretch gap-4"
+      :class="{ 'opacity-50': disabled }"
+    >
+      <div class="grid grid-cols-3 justify-items-center">
         <Button
           v-for="b in topRow"
           :key="b.key"
           v-tooltip.top="b.label"
           :icon="b.icon"
-          severity="secondary"
+          :severity="b.key === 'Power' ? 'danger' : 'secondary'"
+          :text="b.key === 'Power'"
+          rounded
           :aria-label="b.label"
           @click="press(b.key)"
         />
       </div>
 
       <div
-        class="grid size-48 grid-cols-3 grid-rows-3 gap-1 rounded-full bg-zinc-800/60 p-2"
+        class="grid aspect-square w-full grid-cols-3 grid-rows-3 gap-1 rounded-full bg-zinc-800/60 p-2"
         role="group"
         aria-label="Direction pad"
       >
@@ -85,20 +91,33 @@ function press(key: RokuKey) {
         <span />
       </div>
 
-      <div v-for="(row, i) in rows" :key="i" class="grid w-full grid-cols-3 gap-2">
-        <Button
-          v-for="b in row"
-          :key="b.key"
-          v-tooltip.top="b.label"
-          :icon="b.icon"
-          severity="secondary"
-          outlined
-          :aria-label="b.label"
-          @click="press(b.key)"
-        />
+      <div class="grid grid-cols-3 justify-items-center gap-y-3">
+        <template v-for="row in rows" :key="row[0]!.key">
+          <Button
+            v-for="b in row"
+            :key="b.key"
+            v-tooltip.top="b.label"
+            :icon="b.icon"
+            severity="secondary"
+            text
+            rounded
+            class="!bg-zinc-800/60 hover:!bg-zinc-700/80"
+            :aria-label="b.label"
+            @click="press(b.key)"
+          />
+        </template>
       </div>
-
-      <Button label="Type text" icon="pi pi-pencil" severity="secondary" class="w-full" @click="emit('openText')" />
     </fieldset>
+
+    <Button
+      label="Type text"
+      icon="pi pi-pencil"
+      severity="secondary"
+      size="small"
+      outlined
+      class="mt-4 w-full"
+      :disabled="disabled"
+      @click="emit('openText')"
+    />
   </section>
 </template>
