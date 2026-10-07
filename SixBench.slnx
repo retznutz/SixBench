@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SixBench.Api/SixBench.Api.csproj" />
+    <Project Path="src/SixBench.Common/SixBench.Common.csproj" />
+    <Project Path="src/SixBench.Data/SixBench.Data.csproj" />
+    <Project Path="src/SixBench.Services/SixBench.Services.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SixBench.Tests/SixBench.Tests.csproj" />
+  </Folder>
+</Solution>
