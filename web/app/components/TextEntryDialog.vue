@@ -43,9 +43,9 @@ function onLiveKeydown(event: KeyboardEvent) {
 <template>
   <Dialog v-model:visible="visible" modal header="Type on the Roku" class="w-[min(28rem,calc(100vw-2rem))]">
     <div class="flex flex-col gap-4">
-      <label class="flex items-center gap-3 text-sm text-zinc-300">
+      <label class="flex items-center gap-3 text-sm text-surface-300">
         <ToggleSwitch v-model="live" input-id="live-typing" />
-        <span>Live typing <span class="text-zinc-500">— each key is sent as you type</span></span>
+        <span>Live typing <span class="text-surface-500">— each key is sent as you type</span></span>
       </label>
 
       <InputText
@@ -88,7 +88,7 @@ function onLiveKeydown(event: KeyboardEvent) {
         />
         <Button label="Enter" icon="pi pi-check" severity="secondary" outlined size="small" @click="sendKey('Enter')" />
       </div>
-      <p class="text-xs text-zinc-500">Open a search box on the Roku first. Text is sent one character at a time.</p>
+      <p class="text-xs text-surface-500">Open a search box on the Roku first. Text is sent one character at a time.</p>
     </div>
   </Dialog>
 </template>

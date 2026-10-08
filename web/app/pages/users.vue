@@ -44,23 +44,23 @@ onMounted(() => users.fetchAll().catch(() => undefined))
   <div class="space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Users</h1>
-        <p class="text-sm text-zinc-400">
+        <h1 class="text-2xl font-bold tracking-tight">Users</h1>
+        <p class="text-sm text-surface-400">
           Users can watch and control Rokus and manage devices. Admins can also manage users and HTTPS.
         </p>
       </div>
       <Button label="Add user" icon="pi pi-user-plus" @click="open(null)" />
     </div>
 
-    <ul v-if="users.users.length" class="divide-y divide-zinc-800 rounded-xl border border-zinc-800">
+    <ul v-if="users.users.length" class="divide-y divide-surface-800 rounded-xl border border-surface-800">
       <li v-for="user in users.users" :key="user.id" class="flex flex-wrap items-center gap-3 p-4">
-        <i class="pi pi-user text-zinc-500" aria-hidden="true" />
+        <i class="pi pi-user text-surface-500" aria-hidden="true" />
         <div class="min-w-0 flex-1">
           <p class="truncate font-medium">
             {{ user.userName }}
-            <span v-if="user.id === auth.user?.id" class="text-xs font-normal text-zinc-500">(you)</span>
+            <span v-if="user.id === auth.user?.id" class="text-xs font-normal text-surface-500">(you)</span>
           </p>
-          <p class="truncate text-xs text-zinc-500">
+          <p class="truncate text-xs text-surface-500">
             {{ user.email ?? 'no email' }} · last sign-in {{ formatDate(user.lastLoginUtc) }}
           </p>
         </div>
@@ -98,7 +98,7 @@ onMounted(() => users.fetchAll().catch(() => undefined))
     </ul>
     <p
       v-else-if="!users.loading"
-      class="rounded-xl border border-dashed border-zinc-800 p-6 text-center text-sm text-zinc-400"
+      class="rounded-xl border border-dashed border-surface-800 p-6 text-center text-sm text-surface-400"
     >
       No users.
     </p>

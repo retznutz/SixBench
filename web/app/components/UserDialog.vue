@@ -140,7 +140,7 @@ async function save() {
         <small v-if="fieldError('password') || fieldError('newPassword')" class="text-red-400">
           {{ fieldError('password') ?? fieldError('newPassword') }}
         </small>
-        <small v-else class="text-zinc-500">They'll be asked to change it when they sign in.</small>
+        <small v-else class="text-surface-500">They'll be asked to change it when they sign in.</small>
       </div>
 
       <div class="flex justify-end gap-2">

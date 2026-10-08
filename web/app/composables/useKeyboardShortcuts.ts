@@ -37,6 +37,8 @@ export interface KeyboardShortcutHandlers {
   onKey: (key: RokuKey) => void
   /** "T" opens the text-entry dialog. */
   onTextEntry: () => void
+  /** "S" saves a screenshot. */
+  onScreenshot?: () => void
 }
 
 /**
@@ -49,6 +51,12 @@ export function useKeyboardShortcuts(target: Ref<HTMLElement | null>, handlers: 
     if (event.key === 't' || event.key === 'T') {
       event.preventDefault()
       if (!event.repeat) handlers.onTextEntry()
+      return
+    }
+
+    if ((event.key === 's' || event.key === 'S') && handlers.onScreenshot) {
+      event.preventDefault()
+      if (!event.repeat) handlers.onScreenshot()
       return
     }
 

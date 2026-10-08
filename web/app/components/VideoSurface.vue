@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import type { DecoderKind } from '~/types/stream-protocol'
+import { captureFrame, downloadBlob, snapshotFileName } from '~/lib/stream/snapshot'
 
-const props = defineProps<{ decoder: DecoderKind }>()
+/** `name` labels screenshot files. */
+const props = defineProps<{ decoder: DecoderKind; name?: string }>()
 const emit = defineEmits<{ retry: [] }>()
 
 const stream = useStreamStore()
 const root = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 const video = ref<HTMLVideoElement | null>(null)
+const toast = useToast()
 const showStats = ref(false)
+const capturing = ref(false)
 const focused = ref(false)
 
 const overlay = computed(() => {
@@ -38,7 +42,25 @@ async function toggleFullscreen() {
   root.value.focus()
 }
 
-defineExpose({ root, canvas, video })
+const canScreenshot = computed(() => stream.status === 'live' && (stream.stats?.width ?? 0) > 0)
+
+/** Saves the frame on screen as a PNG at the stream's native resolution. */
+async function screenshot() {
+  const source = props.decoder === 'webcodecs' ? canvas.value : video.value
+  if (!source || capturing.value) return
+  capturing.value = true
+  try {
+    const fileName = snapshotFileName(props.name ?? 'sixbench')
+    downloadBlob(await captureFrame(source), fileName)
+    toast.add({ severity: 'success', summary: 'Screenshot saved', detail: fileName, life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Screenshot failed', detail: (e as Error).message, life: 6000 })
+  } finally {
+    capturing.value = false
+  }
+}
+
+defineExpose({ root, canvas, video, screenshot })
 </script>
 
 <template>
@@ -63,9 +85,9 @@ defineExpose({ root, canvas, video })
     >
       <div class="flex max-w-md flex-col items-center gap-3">
         <ProgressSpinner v-if="overlay.icon === 'spinner'" style="width: 40px; height: 40px" stroke-width="4" />
-        <i v-else :class="overlay.icon" class="text-3xl text-zinc-300" aria-hidden="true" />
-        <p class="font-medium text-zinc-100">{{ overlay.title }}</p>
-        <p v-if="overlay.detail" class="max-h-32 overflow-auto whitespace-pre-line text-xs text-zinc-400">
+        <i v-else :class="overlay.icon" class="text-3xl text-surface-300" aria-hidden="true" />
+        <p class="font-medium text-surface-100">{{ overlay.title }}</p>
+        <p v-if="overlay.detail" class="max-h-32 overflow-auto whitespace-pre-line text-xs text-surface-400">
           {{ overlay.detail }}
         </p>
         <Button v-if="overlay.retry" label="Retry" icon="pi pi-refresh" size="small" @click="emit('retry')" />
@@ -85,6 +107,18 @@ defineExpose({ root, canvas, video })
         :aria-pressed="showStats"
         aria-label="Toggle stream stats"
         @click.stop="showStats = !showStats"
+      />
+      <Button
+        v-tooltip.bottom="'Screenshot'"
+        icon="pi pi-camera"
+        text
+        rounded
+        size="small"
+        severity="contrast"
+        aria-label="Save a screenshot"
+        :disabled="!canScreenshot"
+        :loading="capturing"
+        @click.stop="screenshot"
       />
       <Button
         v-tooltip.bottom="'Resync video'"
@@ -112,7 +146,7 @@ defineExpose({ root, canvas, video })
 
     <p
       v-if="stream.status === 'live' && !focused"
-      class="pointer-events-none absolute bottom-2 right-2 rounded bg-black/60 px-2 py-1 text-xs text-zinc-400"
+      class="pointer-events-none absolute bottom-2 right-2 rounded bg-black/60 px-2 py-1 text-xs text-surface-400"
     >
       Click the video to use keyboard controls
     </p>

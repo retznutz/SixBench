@@ -45,10 +45,10 @@ function press(key: RokuKey) {
 </script>
 
 <template>
-  <section class="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4" aria-label="Roku remote">
+  <section class="rounded-xl border border-surface-800 bg-surface-900/60 p-4" aria-label="Roku remote">
     <header class="mb-4 flex min-w-0 items-baseline justify-between gap-2">
-      <h2 class="text-sm font-medium text-zinc-300">Remote</h2>
-      <span v-if="rokuName" class="min-w-0 truncate text-xs text-zinc-500" :title="rokuName">{{ rokuName }}</span>
+      <h2 class="text-sm font-medium text-surface-300">Remote</h2>
+      <span v-if="rokuName" class="min-w-0 truncate text-xs text-surface-500" :title="rokuName">{{ rokuName }}</span>
     </header>
 
     <Message v-if="disabled" severity="warn" size="small" class="mb-4">
@@ -76,7 +76,7 @@ function press(key: RokuKey) {
       </div>
 
       <div
-        class="grid aspect-square w-full grid-cols-3 grid-rows-3 gap-1 rounded-full bg-zinc-800/60 p-2"
+        class="grid aspect-square w-full grid-cols-3 grid-rows-3 gap-1 rounded-full bg-surface-800/60 p-2"
         role="group"
         aria-label="Direction pad"
       >
@@ -101,7 +101,7 @@ function press(key: RokuKey) {
             severity="secondary"
             text
             rounded
-            class="!bg-zinc-800/60 hover:!bg-zinc-700/80"
+            class="!bg-surface-800/60 hover:!bg-surface-700/80"
             :aria-label="b.label"
             @click="press(b.key)"
           />

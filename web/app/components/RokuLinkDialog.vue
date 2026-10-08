@@ -96,7 +96,7 @@ function removeLink() {
 <template>
   <Dialog v-model:visible="visible" modal header="Configure encoder" class="w-[min(32rem,calc(100vw-2rem))]">
     <form v-if="device" class="flex flex-col gap-4" @submit.prevent="save">
-      <p class="-mt-2 text-xs break-words text-zinc-500" :title="device.stableId">{{ device.name }}</p>
+      <p class="-mt-2 text-xs break-words text-surface-500" :title="device.stableId">{{ device.name }}</p>
 
       <div class="flex flex-col gap-1">
         <label for="link-name" class="text-sm">Name</label>
@@ -121,7 +121,7 @@ function removeLink() {
           :loading="rokus.loading"
           placeholder="None"
         />
-        <small v-if="rokus.devices.length === 0" class="text-zinc-500"
+        <small v-if="rokus.devices.length === 0" class="text-surface-500"
           >No Rokus saved yet — discover or add one first.</small
         >
       </div>
@@ -135,7 +135,7 @@ function removeLink() {
           option-label="label"
           option-value="value"
         />
-        <small class="text-zinc-500">
+        <small class="text-surface-500">
           Auto-detect pairs the encoder's own audio device{{ device.audioInput ? ` (${device.audioInput})` : '' }}.
         </small>
       </div>
@@ -147,7 +147,7 @@ function removeLink() {
 
       <button
         type="button"
-        class="flex items-center gap-2 self-start text-sm text-zinc-400 hover:text-zinc-200"
+        class="flex items-center gap-2 self-start text-sm text-surface-400 hover:text-surface-200"
         @click="showAdvanced = !showAdvanced"
       >
         <i :class="showAdvanced ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" aria-hidden="true" />
@@ -155,7 +155,7 @@ function removeLink() {
       </button>
       <div v-if="showAdvanced" class="grid gap-3 sm:grid-cols-3">
         <div class="flex flex-col gap-1">
-          <label for="link-fps" class="text-xs text-zinc-400">Frame rate</label>
+          <label for="link-fps" class="text-xs text-surface-400">Frame rate</label>
           <InputNumber
             v-model="form.frameRate"
             input-id="link-fps"
@@ -168,7 +168,7 @@ function removeLink() {
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label for="link-size" class="text-xs text-zinc-400">Video size</label>
+          <label for="link-size" class="text-xs text-surface-400">Video size</label>
           <InputText
             id="link-size"
             v-model="form.videoSize"
@@ -177,7 +177,7 @@ function removeLink() {
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label for="link-pixfmt" class="text-xs text-zinc-400">Pixel format</label>
+          <label for="link-pixfmt" class="text-xs text-surface-400">Pixel format</label>
           <InputText
             id="link-pixfmt"
             v-model="form.pixelFormat"
@@ -193,7 +193,7 @@ function removeLink() {
         >
           {{ fieldError(name) }}
         </small>
-        <small class="text-zinc-500 sm:col-span-3">
+        <small class="text-surface-500 sm:col-span-3">
           Leave blank for defaults. Set these if ffmpeg reports the device does not support the requested mode.
         </small>
       </div>

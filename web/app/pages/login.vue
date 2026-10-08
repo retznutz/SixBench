@@ -26,13 +26,11 @@ async function submit() {
 <template>
   <div class="w-full max-w-sm space-y-6">
     <div class="flex flex-col items-center gap-3 text-center">
-      <span class="grid size-12 place-items-center rounded-xl bg-primary text-primary-contrast">
-        <i class="pi pi-desktop text-lg" aria-hidden="true" />
-      </span>
-      <h1 class="text-2xl font-semibold tracking-tight">Sign in to SixBench</h1>
+      <BrandLogo size="lg" />
+      <h1 class="text-xl font-bold">Sign in</h1>
     </div>
 
-    <form class="space-y-4 rounded-xl border border-zinc-800 p-6" @submit.prevent="submit">
+    <form class="space-y-4 rounded-xl border border-surface-800 p-6" @submit.prevent="submit">
       <Message v-if="error" severity="error" :closable="false">{{ error }}</Message>
 
       <div class="flex flex-col gap-1">

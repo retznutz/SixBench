@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14.12 47.12 185.76 185.76"><style>:root{--ink:#151217}@media (prefers-color-scheme:dark){:root{--ink:#f5f3f5}}
+      .st0 {
+        fill: #c50cc8;
+      }
+
+      .st1 {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 18px;
+      }
+    </style><g>
+    <path class="st1" d="M107,63h0c22.6,0,41,18.4,41,41v72c0,22.6-18.4,41-41,41h0c-22.6,0-41-18.4-41-41v-72c0-22.6,18.4-41,41-41Z"/>
+    <circle class="st0" cx="107" cy="112" r="14"/>
+    <path class="st0" d="M95,159h24c3.3,0,6,2.7,6,6h0c0,3.3-2.7,6-6,6h-24c-3.3,0-6-2.7-6-6h0c0-3.3,2.7-6,6-6Z"/>
+  </g></svg>

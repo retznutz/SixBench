@@ -16,9 +16,28 @@ const surface = ref<{
   root: HTMLElement | null
   canvas: HTMLCanvasElement | null
   video: HTMLVideoElement | null
+  screenshot: () => Promise<void>
 } | null>(null)
 const surfaceRoot = computed(() => surface.value?.root ?? null)
 const textOpen = ref(false)
+const devToolsOpen = ref(readDevToolsPref())
+
+/** Remembers whether the developer tools were open; storage may be unavailable. */
+function readDevToolsPref() {
+  try {
+    return localStorage.getItem('sixbench.devToolsOpen') === '1'
+  } catch {
+    return false
+  }
+}
+
+watch(devToolsOpen, (open) => {
+  try {
+    localStorage.setItem('sixbench.devToolsOpen', open ? '1' : '0')
+  } catch {
+    // Not persisted; the toggle still works for this visit.
+  }
+})
 
 const name = computed(() => (device.value ? devices.displayName(device.value) : 'Encoder'))
 const rokuId = computed(() => device.value?.link?.rokuDeviceId ?? null)
@@ -51,7 +70,11 @@ function sendKey(key: RokuKey) {
   if (rokuId.value != null) remote.sendKey(rokuId.value, key).catch(() => undefined)
 }
 
-useKeyboardShortcuts(surfaceRoot, { onKey: sendKey, onTextEntry: () => (textOpen.value = true) })
+useKeyboardShortcuts(surfaceRoot, {
+  onKey: sendKey,
+  onTextEntry: () => (textOpen.value = true),
+  onScreenshot: () => surface.value?.screenshot(),
+})
 
 onMounted(async () => {
   await nextTick()
@@ -76,22 +99,35 @@ onBeforeUnmount(() => stream.disconnect())
       <NuxtLink to="/" aria-label="Back to encoders">
         <Button icon="pi pi-arrow-left" text rounded severity="secondary" aria-label="Back to encoders" />
       </NuxtLink>
-      <h1 class="min-w-0 truncate text-xl font-semibold tracking-tight">{{ name }}</h1>
+      <h1 class="min-w-0 truncate text-xl font-bold tracking-tight">{{ name }}</h1>
       <Tag :value="statusTag.value" :severity="statusTag.severity" />
       <span class="flex-1" />
-      <div class="flex items-center gap-1 text-xs text-zinc-500">
+      <Button
+        label="Dev tools"
+        icon="pi pi-wrench"
+        size="small"
+        :text="!devToolsOpen"
+        :severity="devToolsOpen ? 'primary' : 'secondary'"
+        :disabled="rokuId == null"
+        :aria-pressed="devToolsOpen"
+        :title="
+          rokuId == null ? 'Link a Roku to this encoder to use developer tools' : 'SceneGraph, performance and registry'
+        "
+        @click="devToolsOpen = !devToolsOpen"
+      />
+      <div class="flex items-center gap-1 text-xs text-surface-500">
         Decoder:
         <NuxtLink
           :to="{ query: { ...route.query, decoder: undefined } }"
           class="rounded px-2 py-1"
-          :class="decoder === 'webcodecs' ? 'bg-zinc-800 text-zinc-100' : 'hover:text-zinc-300'"
+          :class="decoder === 'webcodecs' ? 'bg-surface-800 text-surface-100' : 'hover:text-surface-300'"
         >
           WebCodecs
         </NuxtLink>
         <NuxtLink
           :to="{ query: { ...route.query, decoder: 'mse' } }"
           class="rounded px-2 py-1"
-          :class="decoder === 'mse' ? 'bg-zinc-800 text-zinc-100' : 'hover:text-zinc-300'"
+          :class="decoder === 'mse' ? 'bg-surface-800 text-surface-100' : 'hover:text-surface-300'"
         >
           MSE
         </NuxtLink>
@@ -100,7 +136,8 @@ onBeforeUnmount(() => stream.disconnect())
 
     <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <div class="space-y-3">
-        <VideoSurface ref="surface" :key="decoder" :decoder="decoder" @retry="start" />
+        <VideoSurface ref="surface" :key="decoder" :decoder="decoder" :name="rokuName ?? name" @retry="start" />
+        <LazyRokuDevTools v-if="devToolsOpen && rokuId != null" :roku-id="rokuId" @close="devToolsOpen = false" />
       </div>
 
       <aside class="space-y-4">
@@ -110,12 +147,14 @@ onBeforeUnmount(() => stream.disconnect())
           <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
             <template v-for="s in KEYBOARD_SHORTCUTS" :key="s.roku">
               <dt>
-                <kbd class="rounded bg-zinc-800 px-1.5 py-0.5 font-mono">{{ s.label }}</kbd>
+                <kbd class="rounded bg-surface-800 px-1.5 py-0.5 font-mono">{{ s.label }}</kbd>
               </dt>
-              <dd class="text-zinc-400">{{ s.roku }}</dd>
+              <dd class="text-surface-400">{{ s.roku }}</dd>
             </template>
-            <dt><kbd class="rounded bg-zinc-800 px-1.5 py-0.5 font-mono">T</kbd></dt>
-            <dd class="text-zinc-400">Type text</dd>
+            <dt><kbd class="rounded bg-surface-800 px-1.5 py-0.5 font-mono">T</kbd></dt>
+            <dd class="text-surface-400">Type text</dd>
+            <dt><kbd class="rounded bg-surface-800 px-1.5 py-0.5 font-mono">S</kbd></dt>
+            <dd class="text-surface-400">Screenshot</dd>
           </dl>
         </Panel>
       </aside>

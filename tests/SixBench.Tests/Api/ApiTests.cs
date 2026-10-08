@@ -83,6 +83,22 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
     }
 
     [Fact]
+    public async Task Dev_tools_validate_and_gate_the_registry()
+    {
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync("/api/v1/roku-devices/999/dev-tools/sgnodes")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync("/api/v1/roku-devices/999/dev-tools/chanperf")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await _client.GetAsync("/api/v1/roku-devices/999/dev-tools/sgnodes?scope=Nodes")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await _client.GetAsync("/api/v1/roku-devices/999/dev-tools/registry/a.b")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync("/api/v1/roku-devices/999/dev-tools/registry/dev")).StatusCode);
+
+        var created = await _client.PostAsJsonAsync("/api/v1/users", new { userName = "dana", password = "Dana-pass-1!", role = "User" });
+        created.EnsureSuccessStatusCode();
+        var user = await factory.SignInAsync("dana", "Dana-pass-1!");
+        Assert.Equal(HttpStatusCode.Forbidden, (await user.GetAsync("/api/v1/roku-devices/999/dev-tools/registry/dev")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await user.GetAsync("/api/v1/roku-devices/999/dev-tools/chanperf")).StatusCode);
+    }
+
+    [Fact]
     public async Task Stream_endpoint_requires_websocket_and_is_hidden_from_swagger()
     {
         var response = await _client.GetAsync($"/api/v1/streams/{DeviceKey.Encode("test:usb")}/ws");
@@ -91,6 +107,7 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
         var swagger = await _client.GetFromJsonAsync<JsonElement>("/swagger/v1/swagger.json");
         var paths = swagger.GetProperty("paths").EnumerateObject().Select(p => p.Name).ToList();
         Assert.Contains("/api/v1/roku-devices/{id}/keys", paths);
+        Assert.Contains("/api/v1/roku-devices/{id}/dev-tools/sgnodes", paths);
         Assert.DoesNotContain(paths, p => p.EndsWith("/ws", StringComparison.Ordinal));
     }
 

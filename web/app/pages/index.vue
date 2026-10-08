@@ -12,8 +12,8 @@ onMounted(() => {
   <div class="space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">Encoders</h1>
-        <p class="text-sm text-zinc-400">
+        <h1 class="text-2xl font-bold tracking-tight">Encoders</h1>
+        <p class="text-sm text-surface-400">
           HDMI capture devices attached to this server. Pick one to watch and control its Roku.
         </p>
       </div>
@@ -34,11 +34,11 @@ onMounted(() => {
 
     <div
       v-else-if="devices.devices.length === 0"
-      class="rounded-xl border border-dashed border-zinc-800 p-10 text-center"
+      class="rounded-xl border border-dashed border-surface-800 p-10 text-center"
     >
-      <i class="pi pi-video mb-3 text-3xl text-zinc-600" aria-hidden="true" />
+      <i class="pi pi-video mb-3 text-3xl text-surface-600" aria-hidden="true" />
       <h2 class="font-medium">No capture devices found</h2>
-      <ul class="mx-auto mt-3 max-w-md space-y-1 text-left text-sm text-zinc-400">
+      <ul class="mx-auto mt-3 max-w-md space-y-1 text-left text-sm text-surface-400">
         <li>• Plug in the HDMI-to-USB encoder and click Rescan.</li>
         <li>• Make sure ffmpeg is installed (or set <code>Ffmpeg:Path</code> in appsettings.json).</li>
         <li>• On macOS, allow camera access for the app running the server.</li>

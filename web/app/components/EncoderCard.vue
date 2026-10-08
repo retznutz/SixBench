@@ -9,17 +9,17 @@ const roku = computed(() => props.device.link?.rokuDevice ?? null)
 </script>
 
 <template>
-  <article class="flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60">
+  <article class="flex flex-col overflow-hidden rounded-xl border border-surface-800 bg-surface-900/60">
     <NuxtLink
       :to="device.isConnected ? `/watch/${device.id}` : undefined"
-      class="group relative grid aspect-video place-items-center bg-zinc-950"
+      class="group relative grid aspect-video place-items-center bg-surface-950"
       :class="device.isConnected ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'"
       :aria-label="device.isConnected ? `Watch ${name}` : `${name} is unplugged`"
     >
-      <i class="pi pi-video text-4xl text-zinc-700 transition-colors group-hover:text-primary" aria-hidden="true" />
+      <i class="pi pi-video text-4xl text-surface-700 transition-colors group-hover:text-primary" aria-hidden="true" />
       <span
         v-if="device.isConnected"
-        class="absolute inset-0 grid place-items-center bg-zinc-950/60 opacity-0 transition-opacity group-hover:opacity-100"
+        class="absolute inset-0 grid place-items-center bg-surface-950/60 opacity-0 transition-opacity group-hover:opacity-100"
       >
         <span
           class="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-contrast"
@@ -31,7 +31,7 @@ const roku = computed(() => props.device.link?.rokuDevice ?? null)
 
     <div class="flex flex-1 flex-col gap-3 p-4">
       <div class="flex items-start justify-between gap-2">
-        <h2 class="min-w-0 truncate font-medium text-zinc-100" :title="name">{{ name }}</h2>
+        <h2 class="min-w-0 truncate font-medium text-surface-100" :title="name">{{ name }}</h2>
         <Tag
           :value="device.isConnected ? 'Connected' : 'Unplugged'"
           :severity="device.isConnected ? 'success' : 'secondary'"
@@ -39,11 +39,11 @@ const roku = computed(() => props.device.link?.rokuDevice ?? null)
         />
       </div>
 
-      <p v-if="device.link && device.link.displayName !== device.name" class="-mt-2 truncate text-xs text-zinc-500">
+      <p v-if="device.link && device.link.displayName !== device.name" class="-mt-2 truncate text-xs text-surface-500">
         {{ device.name }}
       </p>
 
-      <ul class="space-y-1 text-sm text-zinc-400">
+      <ul class="space-y-1 text-sm text-surface-400">
         <li class="flex items-center gap-2">
           <i class="pi pi-link text-xs" aria-hidden="true" />
           <span v-if="roku" class="truncate">{{ roku.friendlyName }} · {{ roku.ipAddress }}</span>

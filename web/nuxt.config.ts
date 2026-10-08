@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite'
-import Aura from '@primeuix/themes/aura'
 
 /** Where the .NET API listens during development (see src/SixBench.Api/Properties/launchSettings.json). */
 const apiDevTarget = process.env.NUXT_API_DEV_TARGET ?? 'http://localhost:5216'
@@ -19,7 +18,16 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'description', content: 'Watch and control a Roku through an HDMI capture encoder.' },
-        { name: 'theme-color', content: '#09090b' },
+        // surface-950 from app/theme/sixbench.ts
+        { name: 'theme-color', content: '#0c090b' },
+      ],
+      link: [
+        // Generated from public/sixbench.svg by `npm run brand:assets`. The SVG follows the browser's light/dark theme.
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'icon', href: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+        { rel: 'icon', type: 'image/png', href: '/favicon-32.png', sizes: '32x32' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' },
       ],
     },
   },
@@ -39,15 +47,10 @@ export default defineNuxtConfig({
     },
   },
   primevue: {
+    // Imported as a module (not inlined here) so the preset survives intact; options are serialized to JSON.
+    importTheme: { from: '~/theme/sixbench.ts', as: 'SixBenchTheme' },
     options: {
       ripple: true,
-      theme: {
-        preset: Aura,
-        options: {
-          darkModeSelector: '.app-dark',
-          cssLayer: { name: 'primevue', order: 'theme, base, primevue' },
-        },
-      },
     },
   },
   vite: {

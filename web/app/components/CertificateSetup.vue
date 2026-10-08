@@ -204,7 +204,7 @@ onUnmounted(() => void stop())
 
 <template>
   <div>
-    <div v-if="certStore.loading && !certStore.status" class="flex items-center gap-2 p-4 text-sm text-zinc-400">
+    <div v-if="certStore.loading && !certStore.status" class="flex items-center gap-2 p-4 text-sm text-surface-400">
       <ProgressSpinner style="width: 1.25rem; height: 1.25rem" stroke-width="6" />
       <span>Loading certificate status…</span>
     </div>
@@ -223,11 +223,11 @@ onUnmounted(() => void stop())
           }}</code>
           <Button icon="pi pi-copy" text rounded size="small" aria-label="Copy address" @click="copyUrl" />
         </div>
-        <p class="mt-2 text-sm text-zinc-400">
+        <p class="mt-2 text-sm text-surface-400">
           Valid until {{ new Date(certStore.status.info?.notAfter ?? '').toLocaleDateString() }} · Issuer:
           {{ certStore.status.info?.issuer }}
         </p>
-        <p class="mt-1 text-xs text-zinc-500">
+        <p class="mt-1 text-xs text-surface-500">
           <span v-if="certStore.status.autoRenewEnabled"
             >Automatic renewal is enabled. DNS credentials are encrypted locally and used only for renewal.</span
           >
@@ -277,7 +277,7 @@ onUnmounted(() => void stop())
                 :class="
                   selectedProvider === provider.name
                     ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
-                    : 'border-zinc-800 hover:border-zinc-600'
+                    : 'border-surface-800 hover:border-surface-600'
                 "
                 :aria-pressed="selectedProvider === provider.name"
                 @click="onProviderSelect(provider.name)"
@@ -285,7 +285,7 @@ onUnmounted(() => void stop())
                 <div class="font-semibold" :class="{ 'text-primary': selectedProvider === provider.name }">
                   {{ provider.name }}
                 </div>
-                <div class="mt-1 text-xs text-zinc-500">Requires: {{ provider.requiredCredentials.join(', ') }}</div>
+                <div class="mt-1 text-xs text-surface-500">Requires: {{ provider.requiredCredentials.join(', ') }}</div>
               </button>
             </div>
             <div class="flex justify-end">
@@ -308,7 +308,7 @@ onUnmounted(() => void stop())
                     <label for="cert-subdomain" class="text-sm font-medium">Domain name</label>
                     <div v-if="!isDuckDns" class="flex items-center gap-1">
                       <InputText id="cert-subdomain" v-model="subdomain" placeholder="sixbench" class="w-28" />
-                      <span class="text-lg font-light text-zinc-500">.</span>
+                      <span class="text-lg font-light text-surface-500">.</span>
                       <InputText
                         v-model="rootDomain"
                         placeholder="mydomain.com"
@@ -318,19 +318,19 @@ onUnmounted(() => void stop())
                         spellcheck="false"
                       />
                     </div>
-                    <p v-else class="text-sm text-zinc-400">
+                    <p v-else class="text-sm text-surface-400">
                       {{ fullDomain || 'Enter your DuckDNS subdomain below' }}
                     </p>
-                    <small v-if="fullDomain" class="text-zinc-400">
+                    <small v-if="fullDomain" class="text-surface-400">
                       Your server will be accessible at
-                      <strong class="text-zinc-200">https://{{ fullDomain }}:{{ serverPort }}</strong>
+                      <strong class="text-surface-200">https://{{ fullDomain }}:{{ serverPort }}</strong>
                     </small>
                   </div>
 
                   <div class="flex flex-col gap-1">
                     <label for="cert-email" class="text-sm font-medium">Email</label>
                     <InputText id="cert-email" v-model="email" placeholder="you@example.com" type="email" />
-                    <small class="text-zinc-400">Used for your Let's Encrypt account.</small>
+                    <small class="text-surface-400">Used for your Let's Encrypt account.</small>
                   </div>
 
                   <Divider />
@@ -371,7 +371,7 @@ onUnmounted(() => void stop())
                   <ToggleSwitch v-model="setupDnsRecord" input-id="cert-a-record" class="mt-0.5 shrink-0" />
                   <div>
                     <label for="cert-a-record" class="text-sm font-medium">Point domain to this server</label>
-                    <p class="mt-0.5 text-xs text-zinc-400">
+                    <p class="mt-0.5 text-xs text-surface-400">
                       Automatically create a DNS A record so <strong>{{ fullDomain || 'your domain' }}</strong> resolves
                       to your server's public IP address.
                     </p>
@@ -384,7 +384,7 @@ onUnmounted(() => void stop())
                     <InputText id="cert-public-ip" v-model="publicIp" placeholder="203.0.113.42" />
                     <Button label="Detect" severity="secondary" :loading="detectingIp" @click="detectPublicIp" />
                   </InputGroup>
-                  <small class="text-zinc-400">Your server's public IP (detected when this page opens)</small>
+                  <small class="text-surface-400">Your server's public IP (detected when this page opens)</small>
                 </div>
 
                 <Button
@@ -420,7 +420,9 @@ onUnmounted(() => void stop())
                 v-for="(s, i) in provisioningSteps"
                 :key="i"
                 class="flex items-start gap-3 rounded-md p-3"
-                :class="i === provisioningSteps.length - 1 && !provisioningComplete ? 'bg-primary/10' : 'bg-zinc-900'"
+                :class="
+                  i === provisioningSteps.length - 1 && !provisioningComplete ? 'bg-primary/10' : 'bg-surface-900'
+                "
               >
                 <ProgressSpinner
                   v-if="i === provisioningSteps.length - 1 && !provisioningComplete"
@@ -431,7 +433,7 @@ onUnmounted(() => void stop())
                 <i v-else class="pi pi-check-circle mt-0.5 text-green-400" aria-hidden="true" />
                 <div>
                   <div class="text-sm font-medium">{{ stepLabel(s.step) }}</div>
-                  <div class="text-xs text-zinc-400">{{ s.message }}</div>
+                  <div class="text-xs text-surface-400">{{ s.message }}</div>
                 </div>
               </div>
 
@@ -441,8 +443,8 @@ onUnmounted(() => void stop())
                 role="status"
               >
                 <ProgressSpinner style="width: 3rem; height: 3rem" stroke-width="4" />
-                <span class="text-lg font-medium text-zinc-300">Starting certificate provisioning…</span>
-                <p class="max-w-md text-sm text-zinc-400">
+                <span class="text-lg font-medium text-surface-300">Starting certificate provisioning…</span>
+                <p class="max-w-md text-sm text-surface-400">
                   Connecting to Let's Encrypt, setting DNS records, and validating domain ownership. This typically
                   takes 30–90 seconds.
                 </p>
@@ -494,22 +496,22 @@ onUnmounted(() => void stop())
       class="w-[min(32rem,calc(100vw-2rem))]"
     >
       <div class="space-y-4 text-sm">
-        <p class="text-zinc-400">
+        <p class="text-surface-400">
           For remote access to work, your router must forward incoming traffic on port
-          <strong class="text-zinc-200">{{ serverPort }}</strong> to this server.
+          <strong class="text-surface-200">{{ serverPort }}</strong> to this server.
         </p>
 
-        <div class="space-y-2 rounded-md bg-zinc-900 p-4">
+        <div class="space-y-2 rounded-md bg-surface-900 p-4">
           <h4 class="font-semibold">Steps:</h4>
-          <ol class="list-inside list-decimal space-y-2 text-zinc-400">
+          <ol class="list-inside list-decimal space-y-2 text-surface-400">
             <li>
-              Log into your router's admin page (usually <code class="rounded bg-zinc-800 px-1">192.168.1.1</code> or
-              <code class="rounded bg-zinc-800 px-1">192.168.0.1</code>)
+              Log into your router's admin page (usually <code class="rounded bg-surface-800 px-1">192.168.1.1</code> or
+              <code class="rounded bg-surface-800 px-1">192.168.0.1</code>)
             </li>
             <li>Find <strong>Port Forwarding</strong> (may be under NAT, Firewall, or Advanced)</li>
             <li>
               Create a new port forwarding rule:
-              <div class="ml-4 mt-2 space-y-1.5 rounded border border-zinc-800 bg-zinc-950 p-3">
+              <div class="ml-4 mt-2 space-y-1.5 rounded border border-surface-800 bg-surface-950 p-3">
                 <div class="flex justify-between">
                   <span>External Port</span><strong>{{ serverPort }}</strong>
                 </div>

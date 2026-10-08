@@ -21,6 +21,7 @@ public sealed class ApiExceptionHandler(IProblemDetailsService problemDetails, I
             ServiceValidationException => (StatusCodes.Status400BadRequest, "Invalid request"),
             FieldValidationException => (StatusCodes.Status400BadRequest, "Invalid request"),
             RokuUnreachableException => (StatusCodes.Status502BadGateway, "Roku unreachable"),
+            RokuRequestRejectedException => (StatusCodes.Status409Conflict, "Roku refused the request"),
             CertificateRequestException => (StatusCodes.Status502BadGateway, "Certificate request failed"),
             OperationCanceledException when httpContext.RequestAborted.IsCancellationRequested => (499, "Client closed request"),
             _ => (StatusCodes.Status500InternalServerError, "Unexpected error"),

@@ -60,7 +60,14 @@ public sealed class RokuEcpClient(HttpClient http) : IRokuEcpClient
         }
     }
 
-    private static async Task<T> ExecuteAsync<T>(string host, Func<Task<T>> call)
+    /// <summary>
+    /// Runs an HTTP call, turning transport failures and timeouts into <see cref="RokuUnreachableException"/>.
+    /// </summary>
+    /// <typeparam name="T">Result type.</typeparam>
+    /// <param name="host">Roku host, for messages.</param>
+    /// <param name="call">The call.</param>
+    /// <returns>The call's result.</returns>
+    internal static async Task<T> ExecuteAsync<T>(string host, Func<Task<T>> call)
     {
         try
         {

@@ -18,10 +18,10 @@ const rows = computed(() => {
 
 <template>
   <dl
-    class="grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 rounded-lg bg-black/75 px-3 py-2 font-mono text-[11px] text-zinc-300"
+    class="grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 rounded-lg bg-black/75 px-3 py-2 font-mono text-[11px] text-surface-300"
   >
     <template v-for="[label, value] in rows" :key="label">
-      <dt class="text-zinc-500">{{ label }}</dt>
+      <dt class="text-surface-500">{{ label }}</dt>
       <dd>{{ value }}</dd>
     </template>
   </dl>

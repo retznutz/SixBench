@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddOptions<AudioOptions>().Bind(configuration.GetSection(AudioOptions.SectionName)).ValidateOnStart();
         services.AddOptions<RokuOptions>().Bind(configuration.GetSection(RokuOptions.SectionName))
             .Validate(o => o.DiscoveryTimeoutMs is > 0 and <= 30000, "Roku:DiscoveryTimeoutMs must be 1-30000.")
+            .Validate(o => o.DevToolsTimeoutMs is > 0 and <= 120000, "Roku:DevToolsTimeoutMs must be 1-120000.")
             .ValidateOnStart();
         services.AddOptions<ServerOptions>().Bind(configuration.GetSection(ServerOptions.SectionName))
             .Validate(o => o.Port is > 0 and <= 65535, "Server:Port must be 1-65535.")
@@ -89,9 +90,14 @@ public static class ServiceCollectionExtensions
         {
             http.Timeout = TimeSpan.FromMilliseconds(sp.GetRequiredService<IOptions<RokuOptions>>().Value.RequestTimeoutMs);
         });
+        services.AddHttpClient<IRokuDevToolsClient, RokuDevToolsClient>((sp, http) =>
+        {
+            http.Timeout = TimeSpan.FromMilliseconds(sp.GetRequiredService<IOptions<RokuOptions>>().Value.DevToolsTimeoutMs);
+        });
         services.AddTransient<IRokuDiscoveryService, RokuDiscoveryService>();
         services.AddScoped<IRokuDeviceService, RokuDeviceService>();
         services.AddScoped<IRokuControlService, RokuControlService>();
+        services.AddScoped<IRokuDevToolsService, RokuDevToolsService>();
 
         // Users
         services.AddScoped<IUserService, UserService>();

@@ -40,9 +40,9 @@ async function submit() {
 <template>
   <div class="mx-auto max-w-md space-y-6">
     <div>
-      <h1 class="text-2xl font-semibold tracking-tight">Account</h1>
-      <p class="text-sm text-zinc-400">
-        Signed in as <span class="font-medium text-zinc-200">{{ auth.user?.userName }}</span> ·
+      <h1 class="text-2xl font-bold tracking-tight">Account</h1>
+      <p class="text-sm text-surface-400">
+        Signed in as <span class="font-medium text-surface-200">{{ auth.user?.userName }}</span> ·
         {{ auth.user?.role === 'Admin' ? 'Administrator' : 'User' }}
       </p>
     </div>
@@ -51,7 +51,7 @@ async function submit() {
       Choose a new password before continuing.
     </Message>
 
-    <form class="space-y-4 rounded-xl border border-zinc-800 p-6" @submit.prevent="submit">
+    <form class="space-y-4 rounded-xl border border-surface-800 p-6" @submit.prevent="submit">
       <h2 class="text-lg font-medium">Change password</h2>
       <div class="flex flex-col gap-1">
         <label for="pw-current" class="text-sm">Current password</label>
@@ -77,7 +77,7 @@ async function submit() {
           :input-props="{ autocomplete: 'new-password', required: true }"
         />
         <small v-if="fieldError('newPassword')" class="text-red-400">{{ fieldError('newPassword') }}</small>
-        <small v-else class="text-zinc-500">
+        <small v-else class="text-surface-500">
           At least 8 characters, with upper- and lower-case letters, a digit and a symbol.
         </small>
       </div>

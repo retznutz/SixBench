@@ -17,6 +17,9 @@ public sealed class RokuOptions
     /// <summary>HTTP timeout for ECP requests, in milliseconds.</summary>
     public int RequestTimeoutMs { get; set; } = 3000;
 
+    /// <summary>HTTP timeout for developer-tool queries (SceneGraph dumps can be large), in milliseconds.</summary>
+    public int DevToolsTimeoutMs { get; set; } = 15000;
+
     /// <summary>Delay between characters when typing text, in milliseconds.</summary>
     public int TextCharDelayMs { get; set; } = 25;
 }

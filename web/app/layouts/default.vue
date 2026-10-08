@@ -20,13 +20,10 @@ function isActive(to: string) {
 
 <template>
   <div class="flex min-h-dvh flex-col">
-    <header class="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
+    <header class="sticky top-0 z-20 border-b border-surface-800 bg-surface-950/90 backdrop-blur">
       <div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-        <NuxtLink to="/" class="flex items-center gap-2 font-semibold tracking-tight text-zinc-100">
-          <span class="grid size-8 place-items-center rounded-lg bg-primary text-primary-contrast">
-            <i class="pi pi-desktop text-sm" aria-hidden="true" />
-          </span>
-          SixBench
+        <NuxtLink to="/" class="rounded-lg" aria-label="SixBench home">
+          <BrandLogo />
         </NuxtLink>
         <nav class="ml-auto flex items-center gap-1" aria-label="Main">
           <NuxtLink
@@ -35,7 +32,9 @@ function isActive(to: string) {
             :to="link.to"
             class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
             :class="
-              isActive(link.to) ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100'
+              isActive(link.to)
+                ? 'bg-primary-400/15 text-primary-100'
+                : 'text-surface-400 hover:bg-surface-900 hover:text-surface-100'
             "
             :aria-current="isActive(link.to) ? 'page' : undefined"
           >
@@ -46,7 +45,9 @@ function isActive(to: string) {
             to="/account"
             class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
             :class="
-              isActive('/account') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100'
+              isActive('/account')
+                ? 'bg-primary-400/15 text-primary-100'
+                : 'text-surface-400 hover:bg-surface-900 hover:text-surface-100'
             "
             :aria-current="isActive('/account') ? 'page' : undefined"
             :title="`Signed in as ${auth.user?.userName}`"
