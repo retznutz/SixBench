@@ -1,6 +1,15 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="web/public/brand/sixbench-dark.svg">
+    <img src="web/public/sixbench.svg" alt="SixBench" width="320">
+  </picture>
+</p>
+
 # SixBench
 
 Watch and control a physical Roku from a web browser.
+
+![The watch page: live video from the Roku with the on-screen remote, audio controls and developer tools](images/screen2.png)
 
 SixBench is a .NET 10 server with a Nuxt 4 web app. It captures a Roku's HDMI output through an HDMI-to-USB capture encoder (an Elgato Cam Link 4K or a generic MS2109 dongle, for example) and streams it to the browser with low latency. It sends remote-control commands back to the Roku over the network.
 
@@ -9,6 +18,8 @@ SixBench is a .NET 10 server with a Nuxt 4 web app. It captures a Roku's HDMI ou
 - **Several encoders, several Rokus.** Pick an encoder from a list. Each one is linked to the Roku plugged into it.
 - **Roku discovery.** Rokus on the LAN are found automatically (SSDP), or you can add one by IP address.
 - **Device audio (optional).** The Roku's sound is streamed as Opus over the same connection.
+- **Screenshots.** Save the current frame as a full-resolution PNG, from any channel.
+- **Developer tools.** Inspect the running channel's SceneGraph node tree, watch its CPU and memory use live, and read its registry (needs developer mode on the Roku).
 - **Cross-platform.** Runs on Windows, macOS and Linux.
 
 ## How it works
@@ -42,7 +53,7 @@ SixBench is a .NET 10 server with a Nuxt 4 web app. It captures a Roku's HDMI ou
 | .NET SDK | 10.0 | Only needed to build. Self-contained builds run without .NET installed. |
 | Node.js | ≥ 22.22.3 (24 LTS recommended) | Only needed to build the web app. |
 
-**Roku setting:** go to *Settings › System › Advanced system settings › Control by mobile apps* and allow network access. Otherwise the Roku rejects remote commands with HTTP 403.
+**Roku setting:** go to *Settings › System › Advanced system settings › Control by mobile apps* and allow network access. Otherwise the Roku rejects remote commands with HTTP 403. The [developer tools](#developer-tools) also need developer mode turned on.
 
 **Browser:** current Chrome or Edge (best), or Safari 16.4+. See [Browser support](#browser-support).
 
@@ -174,6 +185,7 @@ All settings live in `src/SixBench.Api/appsettings.json`, with overrides in `app
 | | `DeviceBitrate` | `128k` | Opus bitrate. |
 | `Roku` | `DiscoveryTimeoutMs` | `3000` | How long discovery listens for replies. |
 | | `EcpPort` / `RequestTimeoutMs` / `TextCharDelayMs` | `8060` / `3000` / `25` | |
+| | `DevToolsTimeoutMs` | `15000` | Timeout for developer-tool queries. SceneGraph dumps of large channels can take several seconds. |
 | `Tls` | `Enabled` | `false` | Serve HTTPS. Turned on from the web app (stored in the database), so you normally leave this. |
 | | `Domain` / `Email` / `DnsProvider` / `DnsCredentials` | empty | Set by the web app. `DnsCredentials` here is plain text and only a fallback; the web app stores credentials encrypted. |
 | | `CertificateDirectory` | `data/certs` | Where the certificate (`sixbench-cert.pfx`) and ACME account key are kept. |
@@ -203,12 +215,34 @@ Click the video first so it has keyboard focus.
 | `Backspace` / `Esc` | Back | | `+` / `-` | Volume |
 | `H` | Home | | `,` / `.` | Rewind / Fast forward |
 | `Space` | Play / Pause | | `T` | Type text |
+| | | | `S` | Save a screenshot |
 
 **Type text** sends a string to a Roku search box. Turn on *Live typing* to send each key as you press it.
 
 ### Video controls
 
-Hover over the video for **Stats** (decoder, codec, resolution, fps, bitrate, jitter, dropped frames), **Resync** (asks for a fresh keyframe) and **Fullscreen** (double-clicking the video also works). The **Decoder** switch at the top of the watch page swaps between WebCodecs and the MSE fallback (`?decoder=mse`).
+Hover over the video for **Stats** (decoder, codec, resolution, fps, bitrate, jitter, dropped frames), **Screenshot**, **Resync** (asks for a fresh keyframe) and **Fullscreen** (double-clicking the video also works). The **Decoder** switch at the top of the watch page swaps between WebCodecs and the MSE fallback (`?decoder=mse`).
+
+**Screenshot** (or the `S` key) downloads the frame on screen as a PNG at the stream's full resolution, named after the Roku and the time, e.g. `office-dev-roku-20261008-114402.png`. It's taken from SixBench's own HDMI capture, so it works for every channel and needs no Roku credentials. Roku's ECP protocol has no screenshot command; the Roku developer web server can take one, but only of a sideloaded channel.
+
+### Developer tools
+
+![Developer tools: the SceneGraph tab showing a captured node tree next to the selected node's fields](images/screen1.png)
+
+Click **Dev tools** at the top of the watch page to open the panel under the video. It's available when the encoder is linked to a Roku, and the page remembers whether you left it open.
+
+The Roku must be set up for it:
+1. **Developer mode** on. On the Roku remote press *Home* ×3, *Up* ×2, *Right*, *Left*, *Right*, *Left*, *Right*, then follow the prompts.
+2. **Control by mobile apps** set to *Enabled* (*Settings › System › Advanced system settings*). *Limited* blocks these queries.
+3. For **SceneGraph** and **Performance**, a sideloaded (dev) channel must be in the foreground. Store channels and the home screen return an error.
+
+| Tab | What it shows |
+|---|---|
+| **SceneGraph** | Captures the node tree of the running channel: **All nodes**, **Roots** (nodes with no parent, kept alive by BrightScript references, useful for finding leaks) or **By id**. **Memory sizes** adds each node's memory use. Filter the tree by type, id or any field; select a node to see all its fields. **Focused node** jumps to the end of the focus chain, and the download button saves the capture as JSON. |
+| **Performance** | Polls CPU (user and system) and memory once a second while the tab is open, with trend lines for the last 60 samples (hover to read past values) and a memory breakdown (resident, anonymous, file-backed, shared, swap). **Pause** stops polling. After an error it retries every 10 seconds. |
+| **Registry** | **Admin only.** Reads a channel's persistent registry, section by section. Use `dev` for the sideloaded channel; a store channel only works if it's linked to the same developer account as the Roku. Admin-only because registries often hold account ids and tokens. |
+
+When the Roku refuses a query (developer mode off, *Limited* mobile-app control, or no dev channel running), the panel shows the Roku's reason instead of data. These queries never trigger rediscovery of a Roku whose IP address changed; the remote buttons still do.
 
 ### Browser support
 
@@ -236,6 +270,7 @@ Start with **`http://<server>:5216/health`**. It reports the database status, th
 | Signed out after a role change or deletion | Expected: sessions pick up account changes within a minute. |
 | Locked out of the only admin account | Wait five minutes. If the password is lost, stop SixBench, delete the `User`, `UserRole` and other `User*` rows from `data/sixbench.db` (or the whole file), and restart to get the seed administrator again. |
 | Remote shows *"Roku … rejected … HTTP 403"* | Turn on *Control by mobile apps* on the Roku. |
+| Developer tools: *Roku refused the request* | Turn on developer mode and set *Control by mobile apps* to *Enabled*. SceneGraph and Performance also need a sideloaded channel in the foreground. See [Developer tools](#developer-tools). |
 | **Discover** finds nothing | SSDP multicast is blocked between the server and the Roku (VLANs, guest Wi-Fi, firewalls). Add the Roku by IP instead. |
 | Device audio unavailable | The encoder needs an audio device the OS can see (on Windows, check *Privacy › Microphone* and *Sound › Input*), and the encoder's **Allow device audio** setting must be on. |
 
@@ -246,12 +281,15 @@ src/
   SixBench.Common     DTOs, enums, stream protocol constants, options, PathUtil, DeviceKey
   SixBench.Data       EF Core + SQLite (tables: RokuDevice, EncoderLink, TlsSetting, and Identity's User, Role, UserRole, …), repositories, migrations
   SixBench.Services   Device enumeration, ffmpeg pipelines, H.264/Opus parsing, session fan-out,
-                      WebSocket handler, Roku ECP client, SSDP discovery, users, certificates (Certes DNS-01 via DNS provider APIs, renewal)
+                      WebSocket handler, Roku ECP client and developer-tool queries, SSDP discovery, users,
+                      certificates (Certes DNS-01 via DNS provider APIs, renewal)
   SixBench.Api        ASP.NET Core Web API (versioned controllers, Swagger, Serilog, health checks),
                       hosts the built web app
 tests/
   SixBench.Tests      xUnit; no hardware or network needed
 web/                  Nuxt 4 SPA: TypeScript, Pinia stores, PrimeVue 4, Tailwind CSS 4
+  app/theme/          Design system: PrimeVue preset with the brand colors (also drives Tailwind's surface-*/primary-* classes)
+  public/sixbench.svg Source logo; icons and the dark-background logo are generated from it
 ```
 
 Dependencies flow `Api → Services → Data → Common`.
@@ -276,6 +314,9 @@ Interactive documentation is at **`/swagger`**. Capture devices are addressed by
 | POST | `/api/v1/roku-devices/discover` | SSDP discovery |
 | POST | `/api/v1/roku-devices/{id}/keys` | `{ "key": "Home", "action": "Press" \| "Down" \| "Up" }` |
 | POST | `/api/v1/roku-devices/{id}/text` | `{ "text": "..." }`, typed one character at a time |
+| GET | `/api/v1/roku-devices/{id}/dev-tools/sgnodes?scope=All\|Roots\|Nodes&nodeId=&sizes=` | SceneGraph node tree of the foreground channel (`nodeId` required for `Nodes`) |
+| GET | `/api/v1/roku-devices/{id}/dev-tools/chanperf` | CPU and memory of the foreground channel |
+| GET | `/api/v1/roku-devices/{id}/dev-tools/registry/{appId}` | **Admin.** A channel's registry (`dev` for the sideloaded channel) |
 | GET | `/api/v1/streams` | Active sessions and per-viewer stats |
 | POST | `/api/v1/auth/login` · `/auth/logout` | `{ "userName", "password", "rememberMe" }`; sets / clears the sign-in cookie |
 | GET · POST | `/api/v1/auth/me` · `/auth/me/password` | Signed-in user / change own password `{ "currentPassword", "newPassword" }` |
@@ -291,7 +332,7 @@ Interactive documentation is at **`/swagger`**. Capture devices are addressed by
 | POST | `/api/v1/server/restart` | **Admin.** Restart (self-relaunch unless `Server:SelfRestart` is false) |
 | GET | `/health` | JSON health report (database, ffmpeg) |
 
-Every route except `/health` needs the sign-in cookie: 401 when signed out, 403 for a User calling an Admin route. Errors are returned as RFC 7807 `application/problem+json`.
+Every route except `/health` needs the sign-in cookie: 401 when signed out, 403 for a User calling an Admin route. Errors are returned as RFC 7807 `application/problem+json`. Roku errors are 502 when the Roku doesn't answer and 409 when it answers but refuses (for example, developer mode is off).
 
 ### Stream WebSocket
 
@@ -315,11 +356,13 @@ npm run lint                # ESLint
 npm run format:check        # Prettier
 npm run typecheck           # vue-tsc
 npm test                    # Vitest
+npm run brand:assets        # regenerate icons and the dark logo after changing public/sixbench.svg
 ```
 
 - **New migration:** `dotnet ef migrations add <Name> -p src/SixBench.Data -s src/SixBench.Api -o Migrations`. Table names are singular.
 - **Branching:** Gitflow. `main` holds releases, `develop` is the integration branch, and work goes on `feature/*` branches.
 - **Conventions:** see [`CLAUDE.md`](CLAUDE.md) (architecture rules, forward-slash paths, frontend stack).
+- **Branding:** colors, fonts and corner radii live in `web/app/theme/sixbench.ts`. Use the `surface-*` and `primary-*` Tailwind classes rather than Tailwind's built-in palettes, so everything follows the theme. `npm run brand:assets` writes `public/favicon.svg` (just the remote, following the browser's light/dark theme), the `.ico`/PNG icons and `public/brand/sixbench-dark.svg` from `public/sixbench.svg`.
 - **Web dev and the API port:** if the API isn't on `localhost:5216`, run `NUXT_API_DEV_TARGET=http://localhost:<port> npm run dev`. In development the browser connects the stream WebSocket straight to the API, because the Nuxt dev proxy doesn't forward WebSockets.
 
 ## Known limitations
@@ -328,4 +371,5 @@ npm test                    # Vitest
 - **About one frame of server-side delay.** A frame is only known to be complete when the next one begins.
 - **Certificates need one of the five supported DNS providers.** Domains in multi-label zones such as `co.uk` aren't supported.
 - **No channel launcher yet.**
+- **Developer tools need developer mode,** and SceneGraph and Performance only work while a sideloaded channel is running.
 - **PrimeVue is pinned to 4.x (MIT).** PrimeVue 5 needs a PrimeUI license key.
