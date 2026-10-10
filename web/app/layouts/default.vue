@@ -21,7 +21,7 @@ function isActive(to: string) {
 <template>
   <div class="flex min-h-dvh flex-col">
     <header class="sticky top-0 z-20 border-b border-surface-800 bg-surface-950/90 backdrop-blur">
-      <div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+      <div class="flex h-18 w-full items-center gap-4 px-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="rounded-lg" aria-label="SixBench home">
           <BrandLogo />
         </NuxtLink>
@@ -67,7 +67,7 @@ function isActive(to: string) {
         </nav>
       </div>
     </header>
-    <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
+    <main class="w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
       <slot />
     </main>
   </div>

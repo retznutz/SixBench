@@ -25,7 +25,7 @@
     "@primevue/nuxt-module": "^4.5.5",
     "@tailwindcss/vite": "^4.3.3",
     "jmuxer": "^2.1.4",
-    "nuxt": "^4.6.0",
+    "nuxt": "^4.6.1",
     "pinia": "^4.0.3",
     "primeicons": "^8.0.2",
     "primevue": "^4.5.5",

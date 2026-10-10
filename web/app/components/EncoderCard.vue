@@ -62,7 +62,7 @@ const roku = computed(() => props.device.link?.rokuDevice ?? null)
         <NuxtLink :to="device.isConnected ? `/watch/${device.id}` : undefined" class="flex-1">
           <Button label="Watch" icon="pi pi-play" size="small" class="w-full" :disabled="!device.isConnected" />
         </NuxtLink>
-        <NuxtLink :to="{ path: '/settings', query: { device: device.id } }">
+        <NuxtLink :to="{ path: '/settings', query: { tab: 'encoders', device: device.id } }">
           <Button
             v-tooltip.top="'Configure'"
             icon="pi pi-sliders-h"
