@@ -39,6 +39,12 @@ public static class ServiceCollectionExtensions
         services.AddOptions<RokuOptions>().Bind(configuration.GetSection(RokuOptions.SectionName))
             .Validate(o => o.DiscoveryTimeoutMs is > 0 and <= 30000, "Roku:DiscoveryTimeoutMs must be 1-30000.")
             .Validate(o => o.DevToolsTimeoutMs is > 0 and <= 120000, "Roku:DevToolsTimeoutMs must be 1-120000.")
+            .Validate(o => o.DevServerPort is > 0 and <= 65535, "Roku:DevServerPort must be 1-65535.")
+            .Validate(o => !string.IsNullOrWhiteSpace(o.DevServerUserName), "Roku:DevServerUserName is required.")
+            .Validate(o => o.DevServerTimeoutMs is >= 10000 and <= 600000, "Roku:DevServerTimeoutMs must be 10000-600000.")
+            .Validate(o => o.SideloadMaxMegabytes is > 0 and <= 1024, "Roku:SideloadMaxMegabytes must be 1-1024.")
+            .Validate(o => o.DebugConsolePort is > 0 and <= 65535, "Roku:DebugConsolePort must be 1-65535.")
+            .Validate(o => o.DebugConsoleBacklogChars is >= 1000 and <= 10000000, "Roku:DebugConsoleBacklogChars must be 1000-10000000.")
             .ValidateOnStart();
         services.AddOptions<ServerOptions>().Bind(configuration.GetSection(ServerOptions.SectionName))
             .Validate(o => o.Port is > 0 and <= 65535, "Server:Port must be 1-65535.")
@@ -46,6 +52,11 @@ public static class ServiceCollectionExtensions
         services.AddOptions<TlsOptions>().Bind(configuration.GetSection(TlsOptions.SectionName))
             .Validate(o => !string.IsNullOrWhiteSpace(o.CertificateDirectory), "Tls:CertificateDirectory is required.")
             .Validate(o => o.ValidationTimeoutSeconds is >= 10 and <= 600, "Tls:ValidationTimeoutSeconds must be 10-600.")
+            .Validate(o => o.DnsSettleSeconds is >= 0 and <= 600, "Tls:DnsSettleSeconds must be 0-600.")
+            .ValidateOnStart();
+        services.AddOptions<ThumbnailOptions>().Bind(configuration.GetSection(ThumbnailOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.Directory), "Thumbnails:Directory is required.")
+            .Validate(o => o.MaxKilobytes is > 0 and <= 10240, "Thumbnails:MaxKilobytes must be 1-10240.")
             .ValidateOnStart();
         services.AddOptions<SeedAdminOptions>().Bind(configuration.GetSection(SeedAdminOptions.SectionName))
             .Validate(o => !string.IsNullOrWhiteSpace(o.UserName), "Identity:SeedAdmin:UserName is required.")
@@ -75,6 +86,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IDeviceInventoryProvider, DeviceInventoryProvider>();
         services.AddSingleton<IAudioPolicy, AudioPolicy>();
+        services.AddSingleton<IEncoderThumbnailStore, EncoderThumbnailStore>();
         services.AddScoped<ICaptureDeviceService, CaptureDeviceService>();
         services.AddScoped<IEncoderLinkService, EncoderLinkService>();
 
@@ -94,6 +106,13 @@ public static class ServiceCollectionExtensions
         {
             http.Timeout = TimeSpan.FromMilliseconds(sp.GetRequiredService<IOptions<RokuOptions>>().Value.DevToolsTimeoutMs);
         });
+        services.AddHttpClient<IRokuDevServerClient, RokuDevServerClient>((sp, http) =>
+        {
+            http.Timeout = TimeSpan.FromMilliseconds(sp.GetRequiredService<IOptions<RokuOptions>>().Value.DevServerTimeoutMs);
+        });
+        services.AddSingleton<IRokuDevPasswordProtector, RokuDevPasswordProtector>();
+        services.AddScoped<IRokuDevChannelService, RokuDevChannelService>();
+        services.AddSingleton<IRokuDebugConsoleManager, RokuDebugConsoleManager>();
         services.AddTransient<IRokuDiscoveryService, RokuDiscoveryService>();
         services.AddScoped<IRokuDeviceService, RokuDeviceService>();
         services.AddScoped<IRokuControlService, RokuControlService>();

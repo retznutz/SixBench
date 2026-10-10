@@ -22,6 +22,14 @@ export const useRokuDevicesStore = defineStore('rokuDevices', () => {
     }
   }
 
+  /** Loads one device and keeps it in the list. Errors are left to the caller. */
+  async function fetchOne(id: number) {
+    const device = await api.get<RokuDevice>(`/roku-devices/${id}`, { silent: true })
+    if (byId(id)) replace(device)
+    else devices.value = [...devices.value, device]
+    return device
+  }
+
   /** Runs SSDP discovery (a few seconds) and returns the devices found. */
   async function discover() {
     discovering.value = true
@@ -45,10 +53,36 @@ export const useRokuDevicesStore = defineStore('rokuDevices', () => {
     }
   }
 
+  function replace(device: RokuDevice) {
+    devices.value = devices.value.map((d) => (d.id === device.id ? device : d))
+  }
+
+  /** Checks the developer-mode password with the Roku, then saves it (admin only). Errors are left to the caller. */
+  async function setDevPassword(id: number, password: string) {
+    replace(await api.put<RokuDevice>(`/roku-devices/${id}/dev-password`, { body: { password }, silent: true }))
+  }
+
+  async function clearDevPassword(id: number) {
+    replace(await api.del<RokuDevice>(`/roku-devices/${id}/dev-password`))
+  }
+
   async function remove(id: number) {
     await api.del(`/roku-devices/${id}`)
     devices.value = devices.value.filter((d) => d.id !== id)
   }
 
-  return { devices, loading, discovering, adding, byId, fetchAll, discover, addManual, remove }
+  return {
+    devices,
+    loading,
+    discovering,
+    adding,
+    byId,
+    fetchAll,
+    fetchOne,
+    discover,
+    addManual,
+    setDevPassword,
+    clearDevPassword,
+    remove,
+  }
 })

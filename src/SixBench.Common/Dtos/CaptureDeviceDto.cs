@@ -13,6 +13,7 @@ namespace SixBench.Common.Dtos;
 /// <param name="Platform">The capture backend platform.</param>
 /// <param name="IsConnected">Whether the device is currently attached (false for saved links whose device is missing).</param>
 /// <param name="Link">The saved encoder-to-Roku link, if one exists.</param>
+/// <param name="ThumbnailUpdatedUtc">When the thumbnail (a frame saved from the encoder's video) was saved; null if there is none yet.</param>
 public sealed record CaptureDeviceDto(
     string Id,
     string StableId,
@@ -21,4 +22,5 @@ public sealed record CaptureDeviceDto(
     string? AudioInput,
     HostPlatform Platform,
     bool IsConnected,
-    EncoderLinkDto? Link);
+    EncoderLinkDto? Link,
+    DateTime? ThumbnailUpdatedUtc);

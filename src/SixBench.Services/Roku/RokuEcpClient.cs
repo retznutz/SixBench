@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+using SixBench.Common.Dtos;
 using SixBench.Common.Enums;
 using SixBench.Services.Exceptions;
 
@@ -39,6 +41,37 @@ public sealed class RokuEcpClient(HttpClient http) : IRokuEcpClient
     /// <inheritdoc />
     public Task SendLiteralAsync(string host, int port, string character, CancellationToken ct = default) =>
         PostAsync(host, BuildUri(host, port, $"keypress/Lit_{Uri.EscapeDataString(character)}"), ct);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<RokuAppDto>> GetAppsAsync(string host, int port, CancellationToken ct = default)
+    {
+        var xml = await ExecuteAsync(host, () => http.GetStringAsync(BuildUri(host, port, "query/apps"), ct));
+        try
+        {
+            return ParseApps(xml);
+        }
+        catch (System.Xml.XmlException ex)
+        {
+            throw new RokuUnreachableException($"{host} responded but not with ECP XML: {ex.Message}", ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public Task LaunchAsync(string host, int port, string appId, CancellationToken ct = default) =>
+        PostAsync(host, BuildUri(host, port, $"launch/{Uri.EscapeDataString(appId)}"), ct);
+
+    /// <summary>
+    /// Parses a <c>/query/apps</c> response.
+    /// </summary>
+    /// <param name="xml">Response body.</param>
+    /// <returns>The channels.</returns>
+    /// <exception cref="System.Xml.XmlException">The body is not XML.</exception>
+    public static IReadOnlyList<RokuAppDto> ParseApps(string xml) =>
+        XDocument.Parse(xml).Root?.Elements("app")
+            .Select(a => new RokuAppDto((string?)a.Attribute("id") ?? string.Empty, a.Value.Trim(), (string?)a.Attribute("version")))
+            .Where(a => a.Id.Length > 0)
+            .ToList()
+        ?? [];
 
     /// <summary>
     /// Builds an ECP URL.

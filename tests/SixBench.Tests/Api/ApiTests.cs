@@ -72,6 +72,37 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
     }
 
     [Fact]
+    public async Task Thumbnail_round_trip_and_validation()
+    {
+        var id = DeviceKey.Encode("test:usb");
+        byte[] jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46];
+
+        static MultipartFormDataContent Form(byte[] bytes, string contentType)
+        {
+            var file = new ByteArrayContent(bytes);
+            file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+            return new MultipartFormDataContent { { file, "image", "thumbnail" } };
+        }
+
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync($"/api/v1/capture-devices/{DeviceKey.Encode("nope")}/thumbnail")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.PutAsync($"/api/v1/capture-devices/{DeviceKey.Encode("nope")}/thumbnail", Form(jpeg, "image/jpeg"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await _client.PutAsync($"/api/v1/capture-devices/{id}/thumbnail", Form([0x89, 0x50, 0x4E, 0x47], "image/png"))).StatusCode);
+
+        var saved = await _client.PutAsync($"/api/v1/capture-devices/{id}/thumbnail", Form(jpeg, "image/jpeg"));
+        saved.EnsureSuccessStatusCode();
+        var device = await saved.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(JsonValueKind.String, device.GetProperty("thumbnailUpdatedUtc").ValueKind);
+
+        var image = await _client.GetAsync($"/api/v1/capture-devices/{id}/thumbnail");
+        image.EnsureSuccessStatusCode();
+        Assert.Equal("image/jpeg", image.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(jpeg, await image.Content.ReadAsByteArrayAsync());
+
+        var listed = Assert.Single((await _client.GetFromJsonAsync<JsonElement>("/api/v1/capture-devices")).EnumerateArray());
+        Assert.Equal(device.GetProperty("thumbnailUpdatedUtc").GetString(), listed.GetProperty("thumbnailUpdatedUtc").GetString());
+    }
+
+    [Fact]
     public async Task Errors_are_problem_details()
     {
         var notFound = await _client.GetAsync("/api/v1/roku-devices/12345");
@@ -99,6 +130,23 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
     }
 
     [Fact]
+    public async Task Dev_channel_endpoints_validate_and_404_for_unknown_rokus()
+    {
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            (await _client.PutAsJsonAsync("/api/v1/roku-devices/999/dev-password", new { password = "secret" })).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.BadRequest,
+            (await _client.PutAsJsonAsync("/api/v1/roku-devices/999/dev-password", new { password = "" })).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.BadRequest,
+            (await _client.PostAsJsonAsync("/api/v1/roku-devices/999/dev-channel/package", new { appName = "A", version = "one", signingPassword = "x" })).StatusCode);
+
+        using var upload = new MultipartFormDataContent { { new ByteArrayContent([(byte)'P', (byte)'K', 3, 4]), "archive", "c.zip" } };
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.PostAsync("/api/v1/roku-devices/999/dev-channel", upload)).StatusCode);
+    }
+
+    [Fact]
     public async Task Stream_endpoint_requires_websocket_and_is_hidden_from_swagger()
     {
         var response = await _client.GetAsync($"/api/v1/streams/{DeviceKey.Encode("test:usb")}/ws");
@@ -108,6 +156,9 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
         var paths = swagger.GetProperty("paths").EnumerateObject().Select(p => p.Name).ToList();
         Assert.Contains("/api/v1/roku-devices/{id}/keys", paths);
         Assert.Contains("/api/v1/roku-devices/{id}/dev-tools/sgnodes", paths);
+        Assert.Contains("/api/v1/roku-devices/{id}/dev-channel", paths);
+        Assert.Contains("/api/v1/roku-devices/{id}/dev-channel/package", paths);
+        Assert.Contains("/api/v1/roku-devices/{id}/dev-password", paths);
         Assert.DoesNotContain(paths, p => p.EndsWith("/ws", StringComparison.Ordinal));
     }
 
@@ -119,6 +170,7 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
         {
             builder.UseEnvironment("Testing");
             builder.UseSetting("ConnectionStrings:SixBench", $"Data Source={Path.Combine(_root, "test.db")}");
+            builder.UseSetting("Thumbnails:Directory", Path.Combine(_root, "thumbnails"));
             TestAuth.Configure(builder, _root);
             builder.UseSetting("Serilog:WriteTo:1:Name", "Console");
             builder.ConfigureTestServices(services =>

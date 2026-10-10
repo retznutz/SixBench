@@ -35,6 +35,13 @@ public class RokuDevice
     /// <summary>When the device last responded.</summary>
     public DateTime LastSeenUtc { get; set; }
 
+    /// <summary>
+    /// Developer-mode web server password (user <c>rokudev</c>), encrypted with ASP.NET Core Data Protection.
+    /// Null when not set.
+    /// </summary>
+    [MaxLength(2048)]
+    public string? DevPasswordProtected { get; set; }
+
     /// <summary>Encoders linked to this Roku.</summary>
     public ICollection<EncoderLink> EncoderLinks { get; set; } = new List<EncoderLink>();
 }

@@ -8,6 +8,7 @@ using SixBench.Api.Hubs;
 using SixBench.Api.Infrastructure;
 using SixBench.Data;
 using SixBench.Services;
+using SixBench.Services.Roku;
 using SixBench.Services.Users;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -44,6 +45,7 @@ try
     var tlsRuntime = builder.ConfigureTls();
     builder.Services.AddSingleton<ServerRestarter>();
     builder.Services.AddSignalR();
+    builder.Services.AddSingleton<IRokuConsoleNotifier, HubRokuConsoleNotifier>();
 
     builder.Services
         .AddControllers()
@@ -125,6 +127,7 @@ try
 
     app.MapControllers();
     app.MapHub<CertificateHub>(CertificateHub.Path);
+    app.MapHub<RokuConsoleHub>(RokuConsoleHub.Path);
     app.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = HealthResponseWriter.WriteAsync }).AllowAnonymous();
 
     // SPA fallback for client-side routes (the app shows its own login page); unknown API paths stay 404.

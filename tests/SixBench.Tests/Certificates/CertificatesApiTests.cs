@@ -135,6 +135,7 @@ public sealed class CertificatesApiTests(CertificatesApiTests.Factory factory) :
             builder.UseSetting("ConnectionStrings:SixBench", $"Data Source={Path.Combine(Root, "test.db")}");
             builder.UseSetting("Serilog:WriteTo:1:Name", "Console");
             builder.UseSetting("Tls:CertificateDirectory", Path.Combine(Root, "certs"));
+            builder.UseSetting("Tls:DnsSettleSeconds", "0");
             TestAuth.Configure(builder, Root);
             builder.ConfigureTestServices(services =>
             {

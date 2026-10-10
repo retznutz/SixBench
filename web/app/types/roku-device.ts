@@ -8,6 +8,8 @@ export interface RokuDevice {
   port: number
   isManual: boolean
   lastSeenUtc: string
+  /** True if the developer-mode password is saved on the server (it is never returned). */
+  hasDevPassword: boolean
 }
 
 /** Body for POST /roku-devices. */

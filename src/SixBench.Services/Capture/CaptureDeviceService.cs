@@ -17,11 +17,13 @@ namespace SixBench.Services.Capture;
 /// <param name="links">Encoder link repository.</param>
 /// <param name="audioPolicy">Audio policy.</param>
 /// <param name="ffmpegOptions">ffmpeg options (capture defaults).</param>
+/// <param name="thumbnails">Encoder thumbnails.</param>
 public sealed class CaptureDeviceService(
     IDeviceInventoryProvider inventory,
     IEncoderLinkRepository links,
     IAudioPolicy audioPolicy,
-    IOptions<FfmpegOptions> ffmpegOptions) : ICaptureDeviceService
+    IOptions<FfmpegOptions> ffmpegOptions,
+    IEncoderThumbnailStore thumbnails) : ICaptureDeviceService
 {
     /// <inheritdoc />
     public async Task<IReadOnlyList<CaptureDeviceDto>> ListAsync(bool refresh = false, CancellationToken ct = default)
@@ -45,7 +47,8 @@ public sealed class CaptureDeviceService(
             link.AudioInput,
             detected.Platform,
             IsConnected: false,
-            link.ToDto())));
+            link.ToDto(),
+            thumbnails.Find(link.CaptureDeviceStableId)?.UpdatedUtc)));
 
         return result
             .OrderByDescending(d => d.IsConnected)
@@ -95,7 +98,7 @@ public sealed class CaptureDeviceService(
             audioPolicy.Evaluate(link, audioInput));
     }
 
-    private static CaptureDeviceDto ToDto(DeviceInventory detected, VideoDeviceInfo video, EncoderLink? link) => new(
+    private CaptureDeviceDto ToDto(DeviceInventory detected, VideoDeviceInfo video, EncoderLink? link) => new(
         DeviceKey.Encode(video.StableId),
         video.StableId,
         video.Name,
@@ -103,7 +106,8 @@ public sealed class CaptureDeviceService(
         ResolveAudioInput(detected, video, link),
         detected.Platform,
         IsConnected: true,
-        link?.ToDto());
+        link?.ToDto(),
+        thumbnails.Find(video.StableId)?.UpdatedUtc);
 
     private static string? ResolveAudioInput(DeviceInventory detected, VideoDeviceInfo video, EncoderLink? link) =>
         !string.IsNullOrWhiteSpace(link?.AudioInput)

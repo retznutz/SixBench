@@ -1,3 +1,4 @@
+using SixBench.Common.Dtos;
 using SixBench.Common.Enums;
 
 namespace SixBench.Services.Roku;
@@ -39,4 +40,25 @@ public interface IRokuEcpClient
     /// <returns>A task.</returns>
     /// <exception cref="Exceptions.RokuUnreachableException">The device did not respond.</exception>
     Task SendLiteralAsync(string host, int port, string character, CancellationToken ct = default);
+
+    /// <summary>
+    /// Lists installed channels (<c>/query/apps</c>).
+    /// </summary>
+    /// <param name="host">IP or host name.</param>
+    /// <param name="port">ECP port.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The channels.</returns>
+    /// <exception cref="Exceptions.RokuUnreachableException">The device did not respond.</exception>
+    Task<IReadOnlyList<RokuAppDto>> GetAppsAsync(string host, int port, CancellationToken ct = default);
+
+    /// <summary>
+    /// Launches a channel (<c>/launch/{appId}</c>).
+    /// </summary>
+    /// <param name="host">IP or host name.</param>
+    /// <param name="port">ECP port.</param>
+    /// <param name="appId">Channel id; <c>dev</c> for the sideloaded channel.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A task.</returns>
+    /// <exception cref="Exceptions.RokuUnreachableException">The device did not respond or refused.</exception>
+    Task LaunchAsync(string host, int port, string appId, CancellationToken ct = default);
 }

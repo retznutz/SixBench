@@ -281,6 +281,10 @@ namespace SixBench.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("DevPasswordProtected")
+                        .HasMaxLength(2048)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("FriendlyName")
                         .IsRequired()
                         .HasMaxLength(200)

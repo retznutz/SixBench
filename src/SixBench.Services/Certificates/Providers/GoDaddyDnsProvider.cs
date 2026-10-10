@@ -42,19 +42,31 @@ public sealed class GoDaddyDnsProvider(IHttpClientFactory http) : IDnsChallengeP
 
     /// <inheritdoc />
     public Task CreateTxtRecordAsync(string domain, string recordName, string recordValue, IReadOnlyDictionary<string, string> credentials, CancellationToken ct = default) =>
-        PutRecordAsync(domain, "TXT", recordName, recordValue, credentials, allowMissing: false, ct);
+        PutRecordAsync(domain, "TXT", recordName, recordValue, credentials, ct);
 
     /// <inheritdoc />
-    public Task DeleteTxtRecordAsync(string domain, string recordName, string recordValue, IReadOnlyDictionary<string, string> credentials, CancellationToken ct = default) =>
-        // GoDaddy has no single-record delete; overwrite with a placeholder. 422 means there was nothing to replace.
-        PutRecordAsync(domain, "TXT", recordName, "deleted", credentials, allowMissing: true, ct);
+    public async Task DeleteTxtRecordAsync(string domain, string recordName, string recordValue, IReadOnlyDictionary<string, string> credentials, CancellationToken ct = default)
+    {
+        using var client = CreateClient(credentials);
+        var rootDomain = DnsNames.GetRootDomain(domain);
+        var relName = DnsNames.GetRelativeRecordName(recordName, rootDomain);
+
+        // Removes every TXT record at the name (only our challenge lives there). Don't leave a placeholder value behind:
+        // GoDaddy's nameservers and Let's Encrypt's resolvers can keep serving it for the 600s TTL, failing the next attempt.
+        // 404 means there was nothing to delete.
+        var response = await client.DeleteAsync($"{BaseUrl}/domains/{rootDomain}/records/TXT/{relName}", ct);
+        if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NotFound)
+        {
+            response.EnsureSuccessStatusCode();
+        }
+    }
 
     /// <inheritdoc />
     public Task UpsertARecordAsync(string domain, string hostname, string ipAddress, IReadOnlyDictionary<string, string> credentials, CancellationToken ct = default) =>
-        PutRecordAsync(domain, "A", hostname, ipAddress, credentials, allowMissing: false, ct);
+        PutRecordAsync(domain, "A", hostname, ipAddress, credentials, ct);
 
     private async Task PutRecordAsync(
-        string domain, string type, string name, string data, IReadOnlyDictionary<string, string> credentials, bool allowMissing, CancellationToken ct)
+        string domain, string type, string name, string data, IReadOnlyDictionary<string, string> credentials, CancellationToken ct)
     {
         using var client = CreateClient(credentials);
         var rootDomain = DnsNames.GetRootDomain(domain);
@@ -62,10 +74,7 @@ public sealed class GoDaddyDnsProvider(IHttpClientFactory http) : IDnsChallengeP
 
         // PUT replaces every record of this type and name.
         var response = await client.PutAsJsonAsync($"{BaseUrl}/domains/{rootDomain}/records/{type}/{relName}", new[] { new { data, ttl = 600 } }, ct);
-        if (!response.IsSuccessStatusCode && !(allowMissing && (int)response.StatusCode == 422))
-        {
-            response.EnsureSuccessStatusCode();
-        }
+        response.EnsureSuccessStatusCode();
     }
 
     private HttpClient CreateClient(IReadOnlyDictionary<string, string> credentials)

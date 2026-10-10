@@ -32,4 +32,10 @@ public sealed class TlsOptions
 
     /// <summary>How long to wait for the TXT record to appear and for Let's Encrypt to validate it, in seconds.</summary>
     public int ValidationTimeoutSeconds { get; set; } = 120;
+
+    /// <summary>
+    /// Extra wait after the domain's nameservers all serve the TXT record, before Let's Encrypt is asked, in seconds.
+    /// Providers like GoDaddy answer from many anycast servers that update a little behind the ones this server sees.
+    /// </summary>
+    public int DnsSettleSeconds { get; set; } = 30;
 }

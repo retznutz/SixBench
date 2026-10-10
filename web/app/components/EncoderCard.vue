@@ -6,17 +6,34 @@ const props = defineProps<{ device: CaptureDevice }>()
 const devices = useCaptureDevicesStore()
 const name = computed(() => devices.displayName(props.device))
 const roku = computed(() => props.device.link?.rokuDevice ?? null)
+const thumbnail = computed(() => devices.thumbnailUrl(props.device))
+/** The thumbnail failed to load; show the placeholder icon instead. */
+const thumbnailBroken = ref(false)
+watch(thumbnail, () => (thumbnailBroken.value = false))
 </script>
 
 <template>
   <article class="flex flex-col overflow-hidden rounded-xl border border-surface-800 bg-surface-900/60">
     <NuxtLink
       :to="device.isConnected ? `/watch/${device.id}` : undefined"
-      class="group relative grid aspect-video place-items-center bg-surface-950"
+      class="group relative grid aspect-video place-items-center overflow-hidden bg-surface-950"
       :class="device.isConnected ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'"
       :aria-label="device.isConnected ? `Watch ${name}` : `${name} is unplugged`"
     >
-      <i class="pi pi-video text-4xl text-surface-700 transition-colors group-hover:text-primary" aria-hidden="true" />
+      <img
+        v-if="thumbnail && !thumbnailBroken"
+        :src="thumbnail"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        class="absolute inset-0 size-full object-cover"
+        @error="thumbnailBroken = true"
+      />
+      <i
+        v-else
+        class="pi pi-video text-4xl text-surface-700 transition-colors group-hover:text-primary"
+        aria-hidden="true"
+      />
       <span
         v-if="device.isConnected"
         class="absolute inset-0 grid place-items-center bg-surface-950/60 opacity-0 transition-opacity group-hover:opacity-100"

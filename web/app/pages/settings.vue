@@ -28,6 +28,13 @@ const manualHost = ref('')
 const manualPort = ref<number | null>(null)
 const editing = ref<CaptureDevice | null>(null)
 const dialogOpen = ref(false)
+const passwordRoku = ref<RokuDevice | null>(null)
+const passwordOpen = ref(false)
+
+function editDevPassword(roku: RokuDevice) {
+  passwordRoku.value = roku
+  passwordOpen.value = true
+}
 
 async function discover() {
   try {
@@ -99,7 +106,7 @@ function formatSeen(iso: string) {
         <Tab value="encoders"><i class="pi pi-video mr-2" aria-hidden="true" />Video Encoders</Tab>
         <Tab v-if="auth.isAdmin" value="security"><i class="pi pi-shield mr-2" aria-hidden="true" />Security</Tab>
       </TabList>
-      <TabPanels class="!bg-transparent !px-0">
+      <TabPanels class="!bg-transparent !px-2 sm:!px-4">
         <TabPanel value="rokus">
           <section class="space-y-4" aria-labelledby="roku-heading">
             <div class="flex flex-wrap items-end justify-between gap-3">
@@ -150,7 +157,36 @@ function formatSeen(iso: string) {
                     {{ formatSeen(roku.lastSeenUtc) }}
                   </p>
                 </div>
+                <Tag
+                  v-if="roku.hasDevPassword"
+                  v-tooltip.bottom="'Developer password saved: sideloading and packaging work from SixBench'"
+                  value="Dev password"
+                  icon="pi pi-key"
+                  severity="info"
+                />
                 <Tag :value="roku.isManual ? 'Manual' : 'Discovered'" severity="secondary" />
+                <Button
+                  v-if="auth.isAdmin"
+                  v-tooltip.bottom="roku.hasDevPassword ? 'Change developer password' : 'Set developer password'"
+                  icon="pi pi-key"
+                  text
+                  rounded
+                  severity="secondary"
+                  :aria-label="`Developer password for ${roku.friendlyName}`"
+                  @click="editDevPassword(roku)"
+                />
+                <Button
+                  v-tooltip.bottom="'Developer page (needs developer mode)'"
+                  as="a"
+                  :href="rokuDevPageUrl(roku)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  icon="pi pi-external-link"
+                  text
+                  rounded
+                  severity="secondary"
+                  :aria-label="`Open the developer page on ${roku.friendlyName}`"
+                />
                 <Button
                   icon="pi pi-trash"
                   text
@@ -228,5 +264,6 @@ function formatSeen(iso: string) {
     </Tabs>
 
     <LazyRokuLinkDialog v-model:visible="dialogOpen" :device="editing" />
+    <LazyRokuDevPasswordDialog v-model:visible="passwordOpen" :roku="passwordRoku" />
   </div>
 </template>

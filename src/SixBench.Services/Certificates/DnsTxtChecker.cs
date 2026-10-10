@@ -45,23 +45,19 @@ public sealed class DnsTxtChecker(ILogger<DnsTxtChecker> logger) : IDnsTxtChecke
         try
         {
             var (servers, hosts) = await FindAuthoritativeServersAsync(system, name, ct);
-            if (servers.Count > 0)
-            {
-                var authoritative = new LookupClient(new LookupClientOptions(servers.ToArray())
-                {
-                    UseCache = false,
-                    Recursion = false,
-                    Timeout = QueryTimeout,
-                    Retries = 1,
-                });
-                var response = await authoritative.QueryAsync(name, QueryType.TXT, QueryClass.IN, ct);
-                var values = response.Answers.TxtRecords().SelectMany(r => r.Text).ToList();
 
-                // A CNAME (delegated validation) needs following; let the recursive resolver do it.
-                if (values.Count > 0 || !response.Answers.CnameRecords().Any())
-                {
-                    return Result(values, expectedValue, $"the domain's nameservers ({string.Join(", ", hosts)})");
-                }
+            // Ask every nameserver separately (one LookupClient over all of them only fails over) and require all of them
+            // to serve the value: Let's Encrypt validates from several places, and a lagging server fails the order.
+            var answers = await Task.WhenAll(servers.Select(s => QueryServerAsync(s, name, ct)));
+            var answered = answers.OfType<IDnsQueryResponse>().ToList();
+
+            // A CNAME (delegated validation) needs following; let the recursive resolver do it.
+            if (answered.Count > 0 && !answered.Any(r => r.Answers.CnameRecords().Any()))
+            {
+                var perServer = answered.Select(r => r.Answers.TxtRecords().SelectMany(t => t.Text).ToList()).ToList();
+                var source = $"the domain's nameservers ({string.Join(", ", hosts)})";
+                var values = perServer.SelectMany(v => v).Distinct(StringComparer.Ordinal).ToList();
+                return new(perServer.All(v => v.Contains(expectedValue, StringComparer.Ordinal)), values, source);
             }
         }
         catch (Exception ex) when (ex is DnsResponseException or System.Net.Sockets.SocketException or TimeoutException)
@@ -71,6 +67,27 @@ public sealed class DnsTxtChecker(ILogger<DnsTxtChecker> logger) : IDnsTxtChecke
 
         var fallback = await system.QueryAsync(name, QueryType.TXT, QueryClass.IN, ct);
         return Result(fallback.Answers.TxtRecords().SelectMany(r => r.Text).ToList(), expectedValue, "this server's DNS resolver");
+    }
+
+    /// <summary>Asks one authoritative server; null if it can't be reached (it may only be reachable over IPv6).</summary>
+    private async Task<IDnsQueryResponse?> QueryServerAsync(NameServer server, string name, CancellationToken ct)
+    {
+        var client = new LookupClient(new LookupClientOptions(server)
+        {
+            UseCache = false,
+            Recursion = false,
+            Timeout = QueryTimeout,
+            Retries = 1,
+        });
+        try
+        {
+            return await client.QueryAsync(name, QueryType.TXT, QueryClass.IN, ct);
+        }
+        catch (Exception ex) when (ex is DnsResponseException or System.Net.Sockets.SocketException or TimeoutException)
+        {
+            logger.LogDebug(ex, "TXT lookup for {Name} on {Server} failed", name, server);
+            return null;
+        }
     }
 
     private static DnsTxtCheckResult Result(List<string> values, string expected, string source) =>

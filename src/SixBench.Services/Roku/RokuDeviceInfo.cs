@@ -8,7 +8,14 @@ namespace SixBench.Services.Roku;
 /// <param name="SerialNumber">Serial number.</param>
 /// <param name="FriendlyName">Best available user-facing name.</param>
 /// <param name="Model">Model name.</param>
-public sealed record RokuDeviceInfo(string SerialNumber, string FriendlyName, string? Model)
+/// <param name="DeveloperEnabled">Whether developer mode is on; null if not reported.</param>
+/// <param name="KeyedDeveloperId">Developer id of the Roku's signing key; null if it has none.</param>
+public sealed record RokuDeviceInfo(
+    string SerialNumber,
+    string FriendlyName,
+    string? Model,
+    bool? DeveloperEnabled = null,
+    string? KeyedDeveloperId = null)
 {
     /// <summary>
     /// Parses the <c>device-info</c> XML document.
@@ -28,6 +35,7 @@ public sealed record RokuDeviceInfo(string SerialNumber, string FriendlyName, st
             ?? Get("default-device-name")
             ?? model
             ?? $"Roku {serial}";
-        return new RokuDeviceInfo(serial, name, model);
+        bool? developerEnabled = Get("developer-enabled") is { } dev ? string.Equals(dev, "true", StringComparison.OrdinalIgnoreCase) : null;
+        return new RokuDeviceInfo(serial, name, model, developerEnabled, Get("keyed-developer-id"));
     }
 }

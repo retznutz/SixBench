@@ -19,7 +19,8 @@ public static class DtoMappings
         entity.IpAddress,
         entity.Port,
         entity.IsManual,
-        DateTime.SpecifyKind(entity.LastSeenUtc, DateTimeKind.Utc));
+        DateTime.SpecifyKind(entity.LastSeenUtc, DateTimeKind.Utc),
+        entity.DevPasswordProtected is not null);
 
     /// <summary>Maps an <see cref="EncoderLink"/> to its DTO.</summary>
     /// <param name="entity">The entity (with <see cref="EncoderLink.RokuDevice"/> loaded when linked).</param>

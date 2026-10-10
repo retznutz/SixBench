@@ -96,6 +96,7 @@ public sealed class CertificateService(
             {
                 progress.Report(new(CertificateProvisioningStep.WaitingForPropagation, "Waiting for DNS propagation (this may take up to 2 minutes)..."));
                 await WaitForDnsPropagationAsync(recordName, recordValue, timeout, ct);
+                await Task.Delay(TimeSpan.FromSeconds(options.Value.DnsSettleSeconds), ct);
 
                 progress.Report(new(CertificateProvisioningStep.Validating, "Requesting Let's Encrypt to validate domain ownership..."));
                 await order.ValidateAsync(timeout, ct);

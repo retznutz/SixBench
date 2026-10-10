@@ -19,7 +19,7 @@ SixBench is a .NET 10 server with a Nuxt 4 web app. It captures a Roku's HDMI ou
 - **Roku discovery.** Rokus on the LAN are found automatically (SSDP), or you can add one by IP address.
 - **Device audio (optional).** The Roku's sound is streamed as Opus over the same connection.
 - **Screenshots.** Save the current frame as a full-resolution PNG, from any channel.
-- **Developer tools.** Inspect the running channel's SceneGraph node tree, watch its CPU and memory use live, and read its registry (needs developer mode on the Roku).
+- **Developer tools.** Sideload a channel zip, follow the BrightScript debug console, and package a signed `.pkg`, all through the server. Inspect the running channel's SceneGraph node tree, watch its CPU and memory use live, and read its registry (needs developer mode on the Roku).
 - **Cross-platform.** Runs on Windows, macOS and Linux.
 
 ## How it works
@@ -53,7 +53,7 @@ SixBench is a .NET 10 server with a Nuxt 4 web app. It captures a Roku's HDMI ou
 | .NET SDK | 10.0 | Only needed to build. Self-contained builds run without .NET installed. |
 | Node.js | ≥ 22.22.3 (24 LTS recommended) | Only needed to build the web app. |
 
-**Roku setting:** go to *Settings › System › Advanced system settings › Control by mobile apps* and allow network access. Otherwise the Roku rejects remote commands with HTTP 403. The [developer tools](#developer-tools) also need developer mode turned on.
+**Roku setting:** go to *Settings › System › Advanced system settings › Control by mobile apps* and allow network access. Otherwise the Roku rejects remote commands with HTTP 403. The [developer tools](#developer-tools) also need developer mode turned on, and sideloading and packaging need the Roku's developer password saved in SixBench.
 
 **Browser:** current Chrome or Edge (best), or Safari 16.4+. See [Browser support](#browser-support).
 
@@ -156,7 +156,7 @@ To try the whole flow without using up production rate limits, set `Tls:UseStagi
 Every page and API call requires signing in, except `/health` and `/swagger`.
 
 - **First start:** when there are no users, SixBench creates an administrator from `Identity:SeedAdmin` (default `admin` / `ChangeMe!123`). It must choose a new password at first sign-in. If `Password` is empty, a random one is generated and written to the log. ⚠️ The default password is public (it's in this repository). Change it right away, or set your own before the first start.
-- **Roles:** **User** can watch and control Rokus and manage Roku and encoder settings. **Admin** can also add, edit and delete users and set up HTTPS.
+- **Roles:** **User** can watch and control Rokus, manage Roku and encoder settings, and use most developer tools. **Admin** can also add, edit and delete users, set up HTTPS, and use the developer tools that change the Roku or can expose secrets: saving developer passwords, installing, deleting and packaging channels, rebooting, the debug console and the registry.
 - **Users page (admins):** add users with an initial password (they must change it at first sign-in), change roles, set a new password (this also unlocks the account), and delete users. You can't delete yourself or remove the last administrator. Changing someone's role or password, or deleting them, signs them out within a minute.
 - **Lockout:** five wrong passwords lock an account for five minutes.
 - Sign-ins use a cookie (`SixBench.Auth`, 14 days with **Keep me signed in**). The keys that protect it are stored in `data/keys`; on Windows they are encrypted with DPAPI.
@@ -186,11 +186,19 @@ All settings live in `src/SixBench.Api/appsettings.json`, with overrides in `app
 | `Roku` | `DiscoveryTimeoutMs` | `3000` | How long discovery listens for replies. |
 | | `EcpPort` / `RequestTimeoutMs` / `TextCharDelayMs` | `8060` / `3000` / `25` | |
 | | `DevToolsTimeoutMs` | `15000` | Timeout for developer-tool queries. SceneGraph dumps of large channels can take several seconds. |
+| | `DevServerPort` / `DevServerUserName` | `80` / `rokudev` | The Roku's developer web server, used for sideloading, packaging and the utilities. |
+| | `DevServerTimeoutMs` | `180000` | Timeout for developer web server requests. Installing and packaging can take a minute. |
+| | `SideloadMaxMegabytes` | `512` | Largest channel zip or `.pkg` accepted for upload (at most 1024). |
+| | `DebugConsolePort` | `8085` | The Roku's BrightScript debug console (telnet). |
+| | `DebugConsoleBacklogChars` | `200000` | Recent console output kept for viewers who open the console later. |
 | `Tls` | `Enabled` | `false` | Serve HTTPS. Turned on from the web app (stored in the database), so you normally leave this. |
 | | `Domain` / `Email` / `DnsProvider` / `DnsCredentials` | empty | Set by the web app. `DnsCredentials` here is plain text and only a fallback; the web app stores credentials encrypted. |
 | | `CertificateDirectory` | `data/certs` | Where the certificate (`sixbench-cert.pfx`) and ACME account key are kept. |
 | | `UseStaging` | `false` | Use the Let's Encrypt staging server (untrusted test certificates). |
 | | `ValidationTimeoutSeconds` | `120` | How long to wait for the TXT record to appear and for validation. |
+| | `DnsSettleSeconds` | `30` | Extra wait after all of the domain's nameservers serve the TXT record, before Let's Encrypt checks it. |
+| `Thumbnails` | `Directory` | `data/thumbnails` | Where encoder thumbnails are kept. The first time an encoder's video plays, the web app saves a frame here for the Encoders page. |
+| | `MaxKilobytes` | `1024` | Largest thumbnail accepted. |
 | `Identity` | `SeedAdmin:UserName` / `SeedAdmin:Password` | `admin` / `ChangeMe!123` | Administrator created on first start (only when there are no users). |
 | `DataProtection` | `KeysPath` | `data/keys` | Where sign-in cookie keys are stored. |
 | `ApplicationInsights` | `ConnectionString` | empty | Turns on Azure Application Insights telemetry when set. |
@@ -223,26 +231,32 @@ Click the video first so it has keyboard focus.
 
 Hover over the video for **Stats** (decoder, codec, resolution, fps, bitrate, jitter, dropped frames), **Screenshot**, **Resync** (asks for a fresh keyframe) and **Fullscreen** (double-clicking the video also works). The **Decoder** switch at the top of the watch page swaps between WebCodecs and the MSE fallback (`?decoder=mse`).
 
-**Screenshot** (or the `S` key) downloads the frame on screen as a PNG at the stream's full resolution, named after the Roku and the time, e.g. `office-dev-roku-20261008-114402.png`. It's taken from SixBench's own HDMI capture, so it works for every channel and needs no Roku credentials. Roku's ECP protocol has no screenshot command; the Roku developer web server can take one, but only of a sideloaded channel.
+**Screenshot** (or the `S` key) downloads the frame on screen as a PNG at the stream's full resolution, named after the Roku and the time, e.g. `office-dev-roku-20261008-114402.png`. It's taken from SixBench's own HDMI capture, so it works for every channel and needs no Roku credentials. Roku's ECP protocol has no screenshot command. For a sideloaded channel you can also have the Roku render one itself, from the developer tools' [Channel tab](#developer-tools).
 
 ### Developer tools
 
 ![Developer tools: the SceneGraph tab showing a captured node tree next to the selected node's fields](images/screen1.png)
 
-Click **Dev tools** at the top of the watch page to open the panel under the video. It's available when the encoder is linked to a Roku, and the page remembers whether you left it open.
+Click **Dev tools** at the top of the watch page to open the panel under the video. It's available when the encoder is linked to a Roku, and the page remembers whether you left it open. To give the tools more room, for example on a second monitor, click the window icon in the panel's header. That opens them in their own browser window on the same tab. Clicking it again brings that window to the front instead of opening another.
+
+**Roku dev page** in the panel's header opens the Roku's own developer web page (`http://<roku-ip>/`) in a new browser tab. So does the link icon next to each Roku in **Settings › Roku devices**. Your browser goes to that page directly, so it only works on the Roku's network. Everything in the tabs below goes through the SixBench server instead, so it works wherever SixBench does.
 
 The Roku must be set up for it:
-1. **Developer mode** on. On the Roku remote press *Home* ×3, *Up* ×2, *Right*, *Left*, *Right*, *Left*, *Right*, then follow the prompts.
+1. **Developer mode** on. On the Roku remote press *Home* ×3, *Up* ×2, *Right*, *Left*, *Right*, *Left*, *Right*, then follow the prompts. You choose a developer password along the way.
 2. **Control by mobile apps** set to *Enabled* (*Settings › System › Advanced system settings*). *Limited* blocks these queries.
 3. For **SceneGraph** and **Performance**, a sideloaded (dev) channel must be in the foreground. Store channels and the home screen return an error.
+4. For the **Channel** and **Packager** actions, the **developer password** saved in SixBench. An administrator clicks the key icon next to the Roku in **Settings › Roku devices**, or **Set password** on the Channel tab. SixBench checks the password with the Roku, then stores it encrypted with the same Data Protection keys as sign-in cookies (`data/keys`). It's never sent back to the browser. If those keys are lost, enter the password again.
 
 | Tab | What it shows |
 |---|---|
+| **Channel** | Whether developer mode is on, the sideloaded channel and its version, and the Roku's signing key. **Install a build:** choose or drop a channel `.zip` with the manifest at its root. It replaces the dev channel, and the Roku launches it. **Launch** starts the sideloaded channel. **Screenshot** has the Roku render the running dev channel at its UI resolution, rather than taking it from the HDMI capture; **Save** downloads it. **Convert to squashfs** (faster start-up, needed for large channels), **Delete**, **Check for update** (some Roku OS versions refuse installs until they've checked) and **Reboot**. Anyone can see the status, launch, and take a screenshot (once a password is saved); the other actions are admin only. |
+| **Console** | **Admin only.** The BrightScript debug console (telnet, port 8085): `print` output, compile errors, crash logs and the debugger prompt. Type a line and click **Send**, or use the quick commands `bt`, `var`, `step`, `over` and `cont`. The Roku accepts only one connection, so the server keeps one per Roku, shares it with everyone watching, and reconnects while anyone is watching. Recent output is shown to people who open the console later. The download button saves the output as a `.log` file, and the eraser clears it in your browser only. Admin-only because the console can stop and step a running channel. |
 | **SceneGraph** | Captures the node tree of the running channel: **All nodes**, **Roots** (nodes with no parent, kept alive by BrightScript references, useful for finding leaks) or **By id**. **Memory sizes** adds each node's memory use. Filter the tree by type, id or any field; select a node to see all its fields. **Focused node** jumps to the end of the focus chain, and the download button saves the capture as JSON. |
 | **Performance** | Polls CPU (user and system) and memory once a second while the tab is open, with trend lines for the last 60 samples (hover to read past values) and a memory breakdown (resident, anonymous, file-backed, shared, swap). **Pause** stops polling. After an error it retries every 10 seconds. |
 | **Registry** | **Admin only.** Reads a channel's persistent registry, section by section. Use `dev` for the sideloaded channel; a store channel only works if it's linked to the same developer account as the Roku. Admin-only because registries often hold account ids and tokens. |
+| **Packager** | **Admin only.** Enter a channel name, a version (such as `1.0` or `1.2.3`) and the signing password from `genkey`. The Roku signs the installed dev channel with its developer key, and SixBench downloads the `.pkg` for the Roku channel store. **Rekey** installs the signing key from a package you signed before, so this Roku can sign updates to that channel. Signing passwords go to the Roku for that one request and are never stored. A Roku without a signing key needs one from `genkey` (telnet, port 8080) first. |
 
-When the Roku refuses a query (developer mode off, *Limited* mobile-app control, or no dev channel running), the panel shows the Roku's reason instead of data. These queries never trigger rediscovery of a Roku whose IP address changed; the remote buttons still do.
+When the Roku refuses a query (developer mode off, *Limited* mobile-app control, or no dev channel running), the panel shows the Roku's reason instead of data. Channel and Packager actions also show the messages the Roku's developer page returned. These queries never trigger rediscovery of a Roku whose IP address changed; the remote buttons still do.
 
 ### Browser support
 
@@ -264,13 +278,21 @@ Start with **`http://<server>:5216/health`**. It reports the database status, th
 | Page works, video black, on another machine | Not a secure context. Serve HTTPS (see [Domain and certificate](#domain-and-certificate-https)). |
 | Certificate: **Test** says the provider rejected the credentials | Check the key or token and its permissions. GoDaddy needs Production keys, and the root domain must be in that account. |
 | Certificate: *The TXT record … did not appear* | The provider accepted the record but its nameservers didn't serve it in time. Let's Encrypt wasn't asked, so no rate limit was used. Try again. Raise `Tls:ValidationTimeoutSeconds` for slow providers. |
-| Certificate: *Domain validation failed* / *too many failed authorizations* | Let's Encrypt saw a different value or none. Production rate-limits failures; set `Tls:UseStaging` to `true` while you troubleshoot. |
+| Certificate: *Domain validation failed* / *too many failed authorizations* | Let's Encrypt saw a different value or none. Production rate-limits failures; set `Tls:UseStaging` to `true` while you troubleshoot. After a failure, wait 10 minutes (GoDaddy's minimum TTL) before retrying so cached answers expire, or raise `Tls:DnsSettleSeconds`. |
 | Domain is in a zone like `example.co.uk` | Not supported: the root domain is taken as the last two labels. |
 | HTTPS page doesn't load after **Restart Now** | Use `https://` and the port shown in Settings. If SixBench didn't come back, start it again (or set `Server:SelfRestart` to match how it's run). |
 | Signed out after a role change or deletion | Expected: sessions pick up account changes within a minute. |
 | Locked out of the only admin account | Wait five minutes. If the password is lost, stop SixBench, delete the `User`, `UserRole` and other `User*` rows from `data/sixbench.db` (or the whole file), and restart to get the seed administrator again. |
 | Remote shows *"Roku … rejected … HTTP 403"* | Turn on *Control by mobile apps* on the Roku. |
 | Developer tools: *Roku refused the request* | Turn on developer mode and set *Control by mobile apps* to *Enabled*. SceneGraph and Performance also need a sideloaded channel in the foreground. See [Developer tools](#developer-tools). |
+| Channel or Packager: *Save the developer password … first* | Save it with the key icon in **Settings › Roku devices** (admin). If it says the saved password *can no longer be decrypted*, the `data/keys` folder was replaced; enter it again. |
+| Saving the developer password: *rejected this password* | Use the password chosen when developer mode was turned on. If it's lost, enter the developer mode sequence on the remote again to set a new one. |
+| Channel actions: *The developer web server (port 80) only runs while developer mode is enabled* | Turn on developer mode. The server must be able to reach the Roku on port 80 as well as 8060. |
+| Install: *The channel failed to compile* | Open the **Console** tab before installing again; the compile errors appear there. |
+| Install: *invalid or corrupt zip* | The manifest must be at the root of the zip. Zip the channel folder's contents, not the folder itself. |
+| Install refused although the zip is fine | Some Roku OS versions refuse installs until they've checked for a software update. Click **Check for update** on the Channel tab, then install again. |
+| Console stays *Disconnected* | The Roku allows one debug console connection. Close the VS Code BrightScript debugger or any other telnet session to port 8085. Developer mode must be on. |
+| Packager: no signing key, or *Packaging failed* | Generate a key with `genkey` in a telnet session to the Roku's port 8080, or **Rekey** from a package you signed before. Check the signing password. |
 | **Discover** finds nothing | SSDP multicast is blocked between the server and the Roku (VLANs, guest Wi-Fi, firewalls). Add the Roku by IP instead. |
 | Device audio unavailable | The encoder needs an audio device the OS can see (on Windows, check *Privacy › Microphone* and *Sound › Input*), and the encoder's **Allow device audio** setting must be on. |
 
@@ -282,9 +304,11 @@ src/
   SixBench.Data       EF Core + SQLite (tables: RokuDevice, EncoderLink, TlsSetting, and Identity's User, Role, UserRole, …), repositories, migrations
   SixBench.Services   Device enumeration, ffmpeg pipelines, H.264/Opus parsing, session fan-out,
                       WebSocket handler, Roku ECP client and developer-tool queries, SSDP discovery, users,
+                      Roku developer web server client (HTTP Digest; sideload, package, rekey, utilities),
+                      shared debug console connections (telnet 8085),
                       certificates (Certes DNS-01 via DNS provider APIs, renewal)
   SixBench.Api        ASP.NET Core Web API (versioned controllers, Swagger, Serilog, health checks),
-                      hosts the built web app
+                      SignalR hubs (certificate progress, debug console), hosts the built web app
 tests/
   SixBench.Tests      xUnit; no hardware or network needed
 web/                  Nuxt 4 SPA: TypeScript, Pinia stores, PrimeVue 4, Tailwind CSS 4
@@ -317,6 +341,14 @@ Interactive documentation is at **`/swagger`**. Capture devices are addressed by
 | GET | `/api/v1/roku-devices/{id}/dev-tools/sgnodes?scope=All\|Roots\|Nodes&nodeId=&sizes=` | SceneGraph node tree of the foreground channel (`nodeId` required for `Nodes`) |
 | GET | `/api/v1/roku-devices/{id}/dev-tools/chanperf` | CPU and memory of the foreground channel |
 | GET | `/api/v1/roku-devices/{id}/dev-tools/registry/{appId}` | **Admin.** A channel's registry (`dev` for the sideloaded channel) |
+| GET | `/api/v1/roku-devices/{id}/dev-channel` | Developer mode, signing key id, whether a developer password is saved, and the sideloaded channel |
+| PUT · DELETE | `/api/v1/roku-devices/{id}/dev-password` | **Admin.** Save `{ "password" }` (checked with the Roku first, stored encrypted, never returned) / forget it |
+| POST · DELETE | `/api/v1/roku-devices/{id}/dev-channel` | **Admin.** Install a channel zip (multipart field `archive`) / delete the sideloaded channel |
+| POST | `/api/v1/roku-devices/{id}/dev-channel/launch` | Launch the sideloaded channel (204) |
+| POST | `/api/v1/roku-devices/{id}/dev-channel/screenshot` | Screenshot rendered by the Roku (JPEG or PNG); sideloaded channel only |
+| POST | `/api/v1/roku-devices/{id}/dev-channel/squashfs` · `/reboot` · `/check-update` | **Admin.** Convert the sideloaded channel to squashfs / reboot the Roku / check for a software update |
+| POST | `/api/v1/roku-devices/{id}/dev-channel/package` | **Admin.** `{ "appName", "version", "signingPassword" }` → signed `.pkg` download |
+| POST | `/api/v1/roku-devices/{id}/dev-channel/rekey` | **Admin.** Multipart `package` (a signed `.pkg`) and `signingPassword` |
 | GET | `/api/v1/streams` | Active sessions and per-viewer stats |
 | POST | `/api/v1/auth/login` · `/auth/logout` | `{ "userName", "password", "rememberMe" }`; sets / clears the sign-in cookie |
 | GET · POST | `/api/v1/auth/me` · `/auth/me/password` | Signed-in user / change own password `{ "currentPassword", "newPassword" }` |
@@ -332,7 +364,9 @@ Interactive documentation is at **`/swagger`**. Capture devices are addressed by
 | POST | `/api/v1/server/restart` | **Admin.** Restart (self-relaunch unless `Server:SelfRestart` is false) |
 | GET | `/health` | JSON health report (database, ffmpeg) |
 
-Every route except `/health` needs the sign-in cookie: 401 when signed out, 403 for a User calling an Admin route. Errors are returned as RFC 7807 `application/problem+json`. Roku errors are 502 when the Roku doesn't answer and 409 when it answers but refuses (for example, developer mode is off).
+Every route except `/health` needs the sign-in cookie: 401 when signed out, 403 for a User calling an Admin route. Errors are returned as RFC 7807 `application/problem+json`. Roku errors are 502 when the Roku doesn't answer and 409 when it answers but refuses (for example, developer mode is off, or it rejects the saved developer password). Developer-channel actions return 400 when no developer password is saved or the upload isn't a zip.
+
+**Debug console hub** (**Admin**): the SignalR hub at `/hubs/roku-console`. Call `Subscribe(rokuId)` to get the connection state and recent output, then receive `ConsoleOutput {rokuId, sequence, text}` and `ConsoleStatus {rokuId, state, message}` events. `Send(rokuId, line)` types a line, and `Unsubscribe(rokuId)` stops watching. The telnet connection closes when the last viewer leaves.
 
 ### Stream WebSocket
 
@@ -370,6 +404,8 @@ npm run brand:assets        # regenerate icons and the dark logo after changing 
 - **No microphone to the Roku.** Roku ECP has no documented way to accept audio, and HDMI capture only goes one way. The protocol messages exist, but the server always refuses the mic.
 - **About one frame of server-side delay.** A frame is only known to be complete when the next one begins.
 - **Certificates need one of the five supported DNS providers.** Domains in multi-label zones such as `co.uk` aren't supported.
-- **No channel launcher yet.**
+- **No channel launcher yet.** Only the sideloaded channel can be launched, from the developer tools.
 - **Developer tools need developer mode,** and SceneGraph and Performance only work while a sideloaded channel is running.
+- **SixBench can't create a signing key.** Run `genkey` in a telnet session to the Roku's port 8080, or rekey from an existing package.
+- **The debug console is shared and exclusive.** The Roku allows one connection to port 8085, so a VS Code debugger and SixBench's Console tab can't be attached at the same time.
 - **PrimeVue is pinned to 4.x (MIT).** PrimeVue 5 needs a PrimeUI license key.

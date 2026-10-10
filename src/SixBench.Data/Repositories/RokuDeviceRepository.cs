@@ -43,6 +43,20 @@ public sealed class RokuDeviceRepository(SixBenchDbContext db) : IRokuDeviceRepo
     }
 
     /// <inheritdoc />
+    public async Task<bool> SetDevPasswordAsync(int id, string? protectedPassword, CancellationToken ct = default)
+    {
+        var existing = await GetAsync(id, ct);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        existing.DevPasswordProtected = protectedPassword;
+        await db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    /// <inheritdoc />
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
         var existing = await db.RokuDevices.Include(r => r.EncoderLinks).FirstOrDefaultAsync(r => r.Id == id, ct);

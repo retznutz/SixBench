@@ -4,6 +4,7 @@ import type { EncoderLink } from '~/types/encoder-link'
 
 export const useCaptureDevicesStore = defineStore('captureDevices', () => {
   const api = useApi()
+  const config = useRuntimeConfig()
 
   const devices = ref<CaptureDevice[]>([])
   const audioInputs = ref<AudioInput[]>([])
@@ -39,6 +40,26 @@ export const useCaptureDevicesStore = defineStore('captureDevices', () => {
     return device
   }
 
+  /** Image URL for the device's thumbnail, or null if it has none. Changes when a new one is saved. */
+  function thumbnailUrl(device: CaptureDevice): string | null {
+    if (!device.thumbnailUpdatedUtc) return null
+    const version = encodeURIComponent(device.thumbnailUpdatedUtc)
+    return `${config.public.apiBase}/capture-devices/${encodeURIComponent(device.id)}/thumbnail?v=${version}`
+  }
+
+  /** Saves a frame as the device's thumbnail. Errors are left to the caller. */
+  async function uploadThumbnail(id: string, image: Blob) {
+    const body = new FormData()
+    body.append('image', image, 'thumbnail.jpg')
+    const device = await api.put<CaptureDevice>(`/capture-devices/${encodeURIComponent(id)}/thumbnail`, {
+      body,
+      silent: true,
+    })
+    const index = devices.value.findIndex((d) => d.id === id)
+    if (index >= 0) devices.value[index] = device
+    return device
+  }
+
   async function fetchAudioInputs() {
     audioInputs.value = await api.get<AudioInput[]>('/capture-devices/audio-inputs')
   }
@@ -61,6 +82,8 @@ export const useCaptureDevicesStore = defineStore('captureDevices', () => {
     displayName,
     fetchAll,
     fetchOne,
+    thumbnailUrl,
+    uploadThumbnail,
     fetchAudioInputs,
     applyLink,
   }

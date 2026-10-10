@@ -121,7 +121,7 @@ public sealed class CertificateServiceTests : IDisposable
         new DnsProviderFactory([_provider]),
         _acme,
         _dns,
-        Options.Create(new TlsOptions { ValidationTimeoutSeconds = timeoutSeconds }),
+        Options.Create(new TlsOptions { ValidationTimeoutSeconds = timeoutSeconds, DnsSettleSeconds = 0 }),
         NullLogger<CertificateService>.Instance);
 
     public sealed class FakeProvider : IDnsChallengeProvider

@@ -33,6 +33,13 @@ public interface IRokuDeviceRepository
     /// <returns>The saved device.</returns>
     Task<RokuDevice> UpsertBySerialAsync(RokuDevice device, CancellationToken ct = default);
 
+    /// <summary>Saves or clears the encrypted developer-mode password.</summary>
+    /// <param name="id">Device id.</param>
+    /// <param name="protectedPassword">Encrypted password, or null to clear it.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>True if the device exists.</returns>
+    Task<bool> SetDevPasswordAsync(int id, string? protectedPassword, CancellationToken ct = default);
+
     /// <summary>Deletes a device; links to it are set to null.</summary>
     /// <param name="id">Device id.</param>
     /// <param name="ct">Cancellation token.</param>

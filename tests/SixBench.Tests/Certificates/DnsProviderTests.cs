@@ -45,13 +45,11 @@ public sealed class DnsProviderTests
     }
 
     [Fact]
-    public async Task GoDaddy_puts_relative_names_and_tolerates_422_on_cleanup()
+    public async Task GoDaddy_puts_relative_names_and_deletes_the_txt_record_on_cleanup()
     {
-        var http = new StubHttp(req => req.Method == HttpMethod.Put && req.RequestUri!.AbsolutePath.EndsWith("/A/sixbench", StringComparison.Ordinal)
-            ? new HttpResponseMessage(HttpStatusCode.OK)
-            : req.Content is not null && Encoding.UTF8.GetString(req.Content.ReadAsByteArrayAsync().Result).Contains("deleted", StringComparison.Ordinal)
-                ? new HttpResponseMessage((HttpStatusCode)422)
-                : new HttpResponseMessage(HttpStatusCode.OK));
+        var http = new StubHttp(req => req.Method == HttpMethod.Delete
+            ? new HttpResponseMessage(HttpStatusCode.NotFound) // nothing to delete is fine
+            : new HttpResponseMessage(HttpStatusCode.OK));
         var provider = new GoDaddyDnsProvider(http);
         var creds = new Dictionary<string, string> { ["ApiKey"] = "k", ["ApiSecret"] = "s" };
 
@@ -61,6 +59,9 @@ public sealed class DnsProviderTests
 
         Assert.Equal("/v1/domains/example.com/records/TXT/_acme-challenge.sixbench", http.Requests[0].Path);
         Assert.Equal("sso-key k:s", http.Requests[0].Authorization);
+        Assert.Equal(HttpMethod.Delete, http.Requests[1].Method);
+        Assert.Equal("/v1/domains/example.com/records/TXT/_acme-challenge.sixbench", http.Requests[1].Path);
+        Assert.DoesNotContain(http.Requests, r => r.Body.Contains("deleted", StringComparison.Ordinal));
         Assert.Equal("/v1/domains/example.com/records/A/sixbench", http.Requests[2].Path);
         await Assert.ThrowsAsync<InvalidOperationException>(() => provider.ValidateCredentialsAsync(creds));
     }

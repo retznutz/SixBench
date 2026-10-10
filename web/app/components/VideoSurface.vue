@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DecoderKind } from '~/types/stream-protocol'
-import { captureFrame, downloadBlob, snapshotFileName } from '~/lib/stream/snapshot'
+import { captureFrame, captureThumbnail, downloadBlob, snapshotFileName } from '~/lib/stream/snapshot'
 
 /** `name` labels screenshot files. */
 const props = defineProps<{ decoder: DecoderKind; name?: string }>()
@@ -60,7 +60,13 @@ async function screenshot() {
   }
 }
 
-defineExpose({ root, canvas, video, screenshot })
+/** The frame on screen as a small JPEG, for the encoder's thumbnail. */
+function thumbnail(): Promise<Blob> {
+  const source = props.decoder === 'webcodecs' ? canvas.value : video.value
+  return source ? captureThumbnail(source) : Promise.reject(new Error('The video is not ready.'))
+}
+
+defineExpose({ root, canvas, video, screenshot, thumbnail })
 </script>
 
 <template>

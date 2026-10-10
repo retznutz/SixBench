@@ -22,4 +22,22 @@ public sealed class RokuOptions
 
     /// <summary>Delay between characters when typing text, in milliseconds.</summary>
     public int TextCharDelayMs { get; set; } = 25;
+
+    /// <summary>Port of the developer-mode web server (installer, packager, utilities).</summary>
+    public int DevServerPort { get; set; } = 80;
+
+    /// <summary>User name for the developer-mode web server (HTTP Digest auth).</summary>
+    public string DevServerUserName { get; set; } = "rokudev";
+
+    /// <summary>HTTP timeout for developer-mode web server requests (installing and packaging can take a minute), in milliseconds.</summary>
+    public int DevServerTimeoutMs { get; set; } = 180000;
+
+    /// <summary>Largest channel zip or package accepted for upload, in megabytes.</summary>
+    public int SideloadMaxMegabytes { get; set; } = 512;
+
+    /// <summary>TCP port of the BrightScript debug console.</summary>
+    public int DebugConsolePort { get; set; } = 8085;
+
+    /// <summary>How much recent debug console output to keep for viewers who join late, in characters.</summary>
+    public int DebugConsoleBacklogChars { get; set; } = 200000;
 }

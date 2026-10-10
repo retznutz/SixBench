@@ -19,6 +19,32 @@ export async function captureFrame(source: HTMLCanvasElement | HTMLVideoElement)
   )
 }
 
+/**
+ * Copies the frame currently shown by a renderer into a small JPEG, for the encoder's thumbnail.
+ * @param maxWidth Frames wider than this are scaled down, keeping their aspect ratio.
+ */
+export async function captureThumbnail(source: HTMLCanvasElement | HTMLVideoElement, maxWidth = 640): Promise<Blob> {
+  const sourceWidth = source instanceof HTMLVideoElement ? source.videoWidth : source.width
+  const sourceHeight = source instanceof HTMLVideoElement ? source.videoHeight : source.height
+  if (!sourceWidth || !sourceHeight) throw new Error('There is no video frame to capture yet.')
+
+  const scale = Math.min(1, maxWidth / sourceWidth)
+  const out = document.createElement('canvas')
+  out.width = Math.round(sourceWidth * scale)
+  out.height = Math.round(sourceHeight * scale)
+  const ctx = out.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2D context is unavailable.')
+  ctx.drawImage(source, 0, 0, out.width, out.height)
+
+  return new Promise((resolve, reject) =>
+    out.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Could not encode the thumbnail.'))),
+      'image/jpeg',
+      0.8,
+    ),
+  )
+}
+
 /** File name like `living-room-roku-20261008-142233.png` (local time). */
 export function snapshotFileName(name: string, at: Date = new Date(), extension = 'png'): string {
   const slug =
