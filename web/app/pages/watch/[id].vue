@@ -63,6 +63,8 @@ let dismissedTextEditId: string | null = null
 watch(
   () => textEdit.state,
   (state) => {
+    // Lost the connection to the Roku: we don't know, so leave the text box as it is.
+    if (state && !state.available) return
     if (!state?.open) {
       dismissedTextEditId = null
       if (textOpenedByRoku && textOpen.value) {

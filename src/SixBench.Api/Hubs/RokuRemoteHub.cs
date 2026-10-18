@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using SixBench.Common.Dtos;
 using SixBench.Services.Exceptions;
@@ -10,6 +11,7 @@ namespace SixBench.Api.Hubs;
 /// when a text field on the Roku opens or closes, so the browser can open its text box. Any signed-in user.
 /// </summary>
 /// <param name="textEdit">Keyboard monitor.</param>
+[Authorize]
 public sealed class RokuRemoteHub(IRokuTextEditMonitor textEdit) : Hub
 {
     /// <summary>Hub path.</summary>
