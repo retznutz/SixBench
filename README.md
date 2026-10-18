@@ -191,6 +191,9 @@ All settings live in `src/SixBench.Api/appsettings.json`, with overrides in `app
 | | `SideloadMaxMegabytes` | `512` | Largest channel zip or `.pkg` accepted for upload (at most 1024). |
 | | `DebugConsolePort` | `8085` | The Roku's BrightScript debug console (telnet). |
 | | `DebugConsoleBacklogChars` | `200000` | Recent console output kept for viewers who open the console later. |
+| | `TextEditMonitorEnabled` | `true` | Watch for the Roku's on-screen keyboard so the **Type text** box opens by itself. |
+| | `TextEditPollMs` | `1000` | How often to ask the Roku whether its keyboard is open, on top of its keyboard events. `0` uses the events only. |
+| | `EcpSessionKey` | Roku's key | Key for the Roku's ECP-2 websocket handshake. Change it only if a Roku OS update breaks the automatic text box. |
 | `Tls` | `Enabled` | `false` | Serve HTTPS. Turned on from the web app (stored in the database), so you normally leave this. |
 | | `Domain` / `Email` / `DnsProvider` / `DnsCredentials` | empty | Set by the web app. `DnsCredentials` here is plain text and only a fallback; the web app stores credentials encrypted. |
 | | `CertificateDirectory` | `data/certs` | Where the certificate (`sixbench-cert.pfx`) and ACME account key are kept. |
@@ -226,6 +229,8 @@ Click the video first so it has keyboard focus.
 | | | | `S` | Save a screenshot |
 
 **Type text** sends a string to a Roku search box. Turn on *Live typing* to send each key as you press it.
+
+When you select a text field on the Roku, such as a search box or a password field, the **Type text** box opens by itself. It closes again when the Roku's keyboard does. If you close it yourself, it stays closed until you move to another text field. Turn this off with *Open automatically* in the box. SixBench learns that the keyboard is open the way Roku's mobile app does, over the Roku's ECP-2 websocket. That works for the Roku's own keyboard. A channel that draws its own keyboard may not report it, and then you open the box with `T` as before.
 
 ### Video controls
 

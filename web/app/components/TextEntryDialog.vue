@@ -3,9 +3,27 @@ const visible = defineModel<boolean>('visible', { required: true })
 const props = defineProps<{ rokuId: number | null }>()
 
 const remote = useRemoteStore()
+const textEdit = useRokuTextEditStore()
 const text = ref('')
-const live = ref(false)
+const live = ref(readLivePref())
 const sending = ref(false)
+
+/** Remembers the typing mode; storage may be unavailable. */
+function readLivePref() {
+  try {
+    return localStorage.getItem('sixbench.liveTyping') === '1'
+  } catch {
+    return false
+  }
+}
+
+watch(live, (on) => {
+  try {
+    localStorage.setItem('sixbench.liveTyping', on ? '1' : '0')
+  } catch {
+    // Not persisted; the toggle still works for this visit.
+  }
+})
 
 async function sendAll() {
   if (props.rokuId == null || !text.value) return
@@ -46,6 +64,13 @@ function onLiveKeydown(event: KeyboardEvent) {
       <label class="flex items-center gap-3 text-sm text-surface-300">
         <ToggleSwitch v-model="live" input-id="live-typing" />
         <span>Live typing <span class="text-surface-500">— each key is sent as you type</span></span>
+      </label>
+      <label class="flex items-center gap-3 text-sm text-surface-300">
+        <ToggleSwitch v-model="textEdit.autoOpen" input-id="auto-open-text" />
+        <span>
+          Open automatically
+          <span class="text-surface-500">— when a text field is selected on the Roku</span>
+        </span>
       </label>
 
       <InputText
@@ -88,7 +113,11 @@ function onLiveKeydown(event: KeyboardEvent) {
         />
         <Button label="Enter" icon="pi pi-check" severity="secondary" outlined size="small" @click="sendKey('Enter')" />
       </div>
-      <p class="text-xs text-surface-500">Open a search box on the Roku first. Text is sent one character at a time.</p>
+      <p class="text-xs text-surface-500">
+        <template v-if="textEdit.open">A text field is selected on the Roku.</template>
+        <template v-else>Open a search box on the Roku first.</template>
+        Text is sent one character at a time.
+      </p>
     </div>
   </Dialog>
 </template>

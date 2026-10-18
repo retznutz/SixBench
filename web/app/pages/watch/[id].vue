@@ -9,6 +9,7 @@ const toast = useToast()
 const devices = useCaptureDevicesStore()
 const stream = useStreamStore()
 const remote = useRemoteStore()
+const textEdit = useRokuTextEditStore()
 
 const id = computed(() => String(route.params.id))
 const decoder = computed<DecoderKind>(() => (route.query.decoder === 'mse' ? 'mse' : 'webcodecs'))
@@ -50,6 +51,40 @@ const rokuDevPage = computed(() => {
 })
 
 useHead({ title: () => `${name.value} · SixBench` })
+
+// Follow the linked Roku's on-screen keyboard so the text box can open when a text field is selected there.
+watch(rokuId, (roku) => void (roku != null ? textEdit.watch(roku) : textEdit.unwatch()), { immediate: true })
+
+/** The text box was opened because the Roku's keyboard opened, so it closes when that keyboard does. */
+let textOpenedByRoku = false
+/** The Roku field the user closed the text box on; it isn't reopened until the Roku leaves that field. */
+let dismissedTextEditId: string | null = null
+
+watch(
+  () => textEdit.state,
+  (state) => {
+    // Lost the connection to the Roku: we don't know, so leave the text box as it is.
+    if (state && !state.available) return
+    if (!state?.open) {
+      dismissedTextEditId = null
+      if (textOpenedByRoku && textOpen.value) {
+        textOpen.value = false
+        surface.value?.root?.focus()
+      }
+      textOpenedByRoku = false
+      return
+    }
+    if (!textEdit.autoOpen || textOpen.value || state.textEditId === dismissedTextEditId) return
+    textOpen.value = true
+    textOpenedByRoku = true
+  },
+)
+
+watch(textOpen, (visible) => {
+  if (visible) return
+  if (textEdit.open) dismissedTextEditId = textEdit.state?.textEditId ?? null
+  textOpenedByRoku = false
+})
 
 const statusTag = computed(() => {
   switch (stream.status) {
@@ -143,6 +178,7 @@ watch([id, decoder], async () => {
 onBeforeUnmount(() => {
   clearTimeout(thumbnailTimer)
   stream.disconnect()
+  void textEdit.unwatch()
 })
 </script>
 

@@ -40,4 +40,22 @@ public sealed class RokuOptions
 
     /// <summary>How much recent debug console output to keep for viewers who join late, in characters.</summary>
     public int DebugConsoleBacklogChars { get; set; } = 200000;
+
+    /// <summary>
+    /// Watch for the Roku's on-screen keyboard (over the ECP-2 websocket) while someone is on the watch page, so the
+    /// browser can open its text box automatically.
+    /// </summary>
+    public bool TextEditMonitorEnabled { get; set; } = true;
+
+    /// <summary>
+    /// How often to ask the Roku whether its keyboard is open, in milliseconds, in addition to listening for its
+    /// keyboard events. 0 relies on the events alone.
+    /// </summary>
+    public int TextEditPollMs { get; set; } = 1000;
+
+    /// <summary>
+    /// Shared key the ECP-2 websocket uses to answer the Roku's authentication challenge. It is the same for every
+    /// Roku (it comes from Roku's own mobile app); override it only if a Roku OS update changes it.
+    /// </summary>
+    public string EcpSessionKey { get; set; } = "95E610D0-7C29-44EF-FB0F-97F1FCE4C297";
 }

@@ -45,6 +45,8 @@ public static class ServiceCollectionExtensions
             .Validate(o => o.SideloadMaxMegabytes is > 0 and <= 1024, "Roku:SideloadMaxMegabytes must be 1-1024.")
             .Validate(o => o.DebugConsolePort is > 0 and <= 65535, "Roku:DebugConsolePort must be 1-65535.")
             .Validate(o => o.DebugConsoleBacklogChars is >= 1000 and <= 10000000, "Roku:DebugConsoleBacklogChars must be 1000-10000000.")
+            .Validate(o => o.TextEditPollMs is 0 or (>= 200 and <= 60000), "Roku:TextEditPollMs must be 0 or 200-60000.")
+            .Validate(o => !o.TextEditMonitorEnabled || !string.IsNullOrWhiteSpace(o.EcpSessionKey), "Roku:EcpSessionKey is required.")
             .ValidateOnStart();
         services.AddOptions<ServerOptions>().Bind(configuration.GetSection(ServerOptions.SectionName))
             .Validate(o => o.Port is > 0 and <= 65535, "Server:Port must be 1-65535.")
@@ -113,6 +115,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRokuDevPasswordProtector, RokuDevPasswordProtector>();
         services.AddScoped<IRokuDevChannelService, RokuDevChannelService>();
         services.AddSingleton<IRokuDebugConsoleManager, RokuDebugConsoleManager>();
+        services.AddSingleton<IRokuTextEditMonitor, RokuTextEditMonitor>();
         services.AddTransient<IRokuDiscoveryService, RokuDiscoveryService>();
         services.AddScoped<IRokuDeviceService, RokuDeviceService>();
         services.AddScoped<IRokuControlService, RokuControlService>();
