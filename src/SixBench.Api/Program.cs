@@ -46,6 +46,7 @@ try
     builder.Services.AddSingleton<ServerRestarter>();
     builder.Services.AddSignalR();
     builder.Services.AddSingleton<IRokuConsoleNotifier, HubRokuConsoleNotifier>();
+    builder.Services.AddSingleton<IRokuTextEditNotifier, HubRokuTextEditNotifier>();
 
     builder.Services
         .AddControllers()
@@ -128,6 +129,7 @@ try
     app.MapControllers();
     app.MapHub<CertificateHub>(CertificateHub.Path);
     app.MapHub<RokuConsoleHub>(RokuConsoleHub.Path);
+    app.MapHub<RokuRemoteHub>(RokuRemoteHub.Path);
     app.MapHealthChecks("/health", new HealthCheckOptions { ResponseWriter = HealthResponseWriter.WriteAsync }).AllowAnonymous();
 
     // SPA fallback for client-side routes (the app shows its own login page); unknown API paths stay 404.
