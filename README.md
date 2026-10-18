@@ -291,7 +291,7 @@ Start with **`http://<server>:5216/health`**. It reports the database status, th
 | Install: *The channel failed to compile* | Open the **Console** tab before installing again; the compile errors appear there. |
 | Install: *invalid or corrupt zip* | The manifest must be at the root of the zip. Zip the channel folder's contents, not the folder itself. |
 | Install refused although the zip is fine | Some Roku OS versions refuse installs until they've checked for a software update. Click **Check for update** on the Channel tab, then install again. |
-| Console stays *Disconnected* | The Roku allows one debug console connection. Close the VS Code BrightScript debugger or any other telnet session to port 8085. Developer mode must be on. |
+| Console stays *Disconnected* | The Roku allows one debug console connection. Close the VS Code BrightScript debugger or any other telnet session to port 8085. Developer mode must be on. When the Roku drops the connection right away, SixBench waits longer between retries (up to a minute). |
 | Packager: no signing key, or *Packaging failed* | Generate a key with `genkey` in a telnet session to the Roku's port 8080, or **Rekey** from a package you signed before. Check the signing password. |
 | **Discover** finds nothing | SSDP multicast is blocked between the server and the Roku (VLANs, guest Wi-Fi, firewalls). Add the Roku by IP instead. |
 | Device audio unavailable | The encoder needs an audio device the OS can see (on Windows, check *Privacy › Microphone* and *Sound › Input*), and the encoder's **Allow device audio** setting must be on. |
@@ -366,7 +366,7 @@ Interactive documentation is at **`/swagger`**. Capture devices are addressed by
 
 Every route except `/health` needs the sign-in cookie: 401 when signed out, 403 for a User calling an Admin route. Errors are returned as RFC 7807 `application/problem+json`. Roku errors are 502 when the Roku doesn't answer and 409 when it answers but refuses (for example, developer mode is off, or it rejects the saved developer password). Developer-channel actions return 400 when no developer password is saved or the upload isn't a zip.
 
-**Debug console hub** (**Admin**): the SignalR hub at `/hubs/roku-console`. Call `Subscribe(rokuId)` to get the connection state and recent output, then receive `ConsoleOutput {rokuId, sequence, text}` and `ConsoleStatus {rokuId, state, message}` events. `Send(rokuId, line)` types a line, and `Unsubscribe(rokuId)` stops watching. The telnet connection closes when the last viewer leaves.
+**Debug console hub** (**Admin**): the SignalR hub at `/hubs/roku-console`. Call `Subscribe(rokuId)` to get the connection state and recent output, then receive `ConsoleOutput {rokuId, sequence, text}` and `ConsoleStatus {rokuId, state, message}` events. `Send(rokuId, line)` types a line, and `Unsubscribe(rokuId)` stops watching. The telnet connection closes when the last viewer leaves; the Console tab subscribes only while it is the open tab.
 
 ### Stream WebSocket
 
@@ -407,5 +407,5 @@ npm run brand:assets        # regenerate icons and the dark logo after changing 
 - **No channel launcher yet.** Only the sideloaded channel can be launched, from the developer tools.
 - **Developer tools need developer mode,** and SceneGraph and Performance only work while a sideloaded channel is running.
 - **SixBench can't create a signing key.** Run `genkey` in a telnet session to the Roku's port 8080, or rekey from an existing package.
-- **The debug console is shared and exclusive.** The Roku allows one connection to port 8085, so a VS Code debugger and SixBench's Console tab can't be attached at the same time.
+- **The debug console is shared and exclusive.** The Roku allows one connection to port 8085, so a VS Code debugger and SixBench's Console tab can't be attached at the same time. SixBench holds the connection only while the Console tab is open, so switch tabs or close developer tools before you sideload from VS Code.
 - **PrimeVue is pinned to 4.x (MIT).** PrimeVue 5 needs a PrimeUI license key.

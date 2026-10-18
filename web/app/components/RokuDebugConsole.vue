@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { downloadBlob, snapshotFileName } from '~/lib/stream/snapshot'
 
-/** The BrightScript debug console (port 8085), shared with everyone else watching it. Admin only. */
-const props = defineProps<{ rokuId: number }>()
+/**
+ * The BrightScript debug console (port 8085), shared with everyone else watching it. Admin only.
+ * `active`: the tab is visible; SixBench holds the Roku's one console connection only while it is.
+ */
+const props = defineProps<{ rokuId: number; active: boolean }>()
 
 const debugConsole = useRokuConsoleStore()
 
@@ -33,8 +36,11 @@ const stateTag = computed(() => {
 })
 
 watch(
-  () => props.rokuId,
-  (id) => debugConsole.watch(id),
+  () => [props.active, props.rokuId] as const,
+  ([active, id]) => {
+    if (active) void debugConsole.watch(id)
+    else void debugConsole.unwatch()
+  },
   { immediate: true },
 )
 onBeforeUnmount(() => debugConsole.unwatch())
@@ -142,8 +148,8 @@ function save() {
       </span>
     </form>
     <p class="text-xs text-surface-500">
-      The Roku allows one connection to this debugConsole. SixBench shares it with everyone watching, but a VS Code
-      debugger or another telnet session will keep it from connecting.
+      The Roku allows one connection to this console. SixBench holds it only while this tab is open and shares it with
+      everyone watching; switch tabs to free it for a VS Code debugger or another telnet session.
     </p>
   </div>
 </template>

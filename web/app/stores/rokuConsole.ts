@@ -59,7 +59,11 @@ export const useRokuConsoleStore = defineStore('rokuConsole', () => {
     pending = []
     try {
       const snapshot = await connection.invoke<RokuConsoleSnapshot>('Subscribe', id)
-      if (id !== rokuId.value) return
+      if (id !== rokuId.value) {
+        // Unwatched while subscribing; don't leave the server holding the Roku's console for nobody.
+        void connection.invoke('Unsubscribe', id).catch(() => {})
+        return
+      }
       text.value = snapshot.backlog
       lastSequence = snapshot.sequence
       status.value = snapshot.status

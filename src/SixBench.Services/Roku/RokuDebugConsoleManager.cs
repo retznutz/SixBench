@@ -81,7 +81,14 @@ public sealed class RokuDebugConsoleManager(
     public const string Disconnected = "Disconnected";
 
     private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan[] RetryDelays = [TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10)];
+    private static readonly TimeSpan[] RetryDelays =
+        [TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60)];
+
+    /// <summary>
+    /// A connection the Roku closes sooner than this counts as a failure: it accepts and drops a second client
+    /// while another debugger holds the console, and reconnecting quickly fights that debugger for it.
+    /// </summary>
+    private static readonly TimeSpan StableConnection = TimeSpan.FromSeconds(10);
 
     private readonly Lock _gate = new();
     private readonly Dictionary<int, Session> _sessions = [];
@@ -225,6 +232,7 @@ public sealed class RokuDebugConsoleManager(
         while (!ct.IsCancellationRequested)
         {
             string message;
+            DateTime? connectedAt = null;
             await SetStatusAsync(session, Connecting, null);
             try
             {
@@ -237,7 +245,7 @@ public sealed class RokuDebugConsoleManager(
 
                 var stream = tcp.GetStream();
                 session.Stream = stream;
-                failures = 0;
+                connectedAt = DateTime.UtcNow;
                 await SetStatusAsync(session, Connected, null);
 
                 var decoder = Encoding.UTF8.GetDecoder();
@@ -262,7 +270,6 @@ public sealed class RokuDebugConsoleManager(
             }
             catch (Exception ex) when (ex is SocketException or IOException or OperationCanceledException)
             {
-                failures++;
                 message = ex is OperationCanceledException
                     ? $"Could not reach {session.Host}:{session.Port} in time."
                     : $"Could not connect to {session.Host}:{session.Port}: {ex.Message}";
@@ -271,6 +278,21 @@ public sealed class RokuDebugConsoleManager(
             finally
             {
                 session.Stream = null;
+            }
+
+            // Only a connection that lasted resets the backoff, so SixBench doesn't keep snatching the console
+            // back from a debugger that holds it.
+            if (connectedAt is { } at && DateTime.UtcNow - at >= StableConnection)
+            {
+                failures = 0;
+            }
+            else
+            {
+                failures++;
+                if (connectedAt is not null)
+                {
+                    message = "The Roku closed the debug console right away. Another debugger or telnet session probably has it.";
+                }
             }
 
             await SetStatusAsync(session, Disconnected, message);

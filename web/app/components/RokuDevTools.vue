@@ -94,7 +94,9 @@ onBeforeUnmount(() => {
       </TabList>
       <TabPanels class="!bg-transparent">
         <TabPanel value="channel"><RokuDevChannel :roku-id="rokuId" /></TabPanel>
-        <TabPanel v-if="auth.isAdmin" value="console"><RokuDebugConsole :roku-id="rokuId" /></TabPanel>
+        <TabPanel v-if="auth.isAdmin" value="console"
+          ><RokuDebugConsole :roku-id="rokuId" :active="tab === 'console'"
+        /></TabPanel>
         <TabPanel value="scenegraph"><SceneGraphInspector :roku-id="rokuId" /></TabPanel>
         <TabPanel value="performance"
           ><ChannelPerformance :roku-id="rokuId" :active="tab === 'performance'"
