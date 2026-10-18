@@ -73,8 +73,8 @@ defineExpose({ root, canvas, video, screenshot, thumbnail })
   <div
     ref="root"
     tabindex="0"
-    class="group relative aspect-video w-full overflow-hidden rounded-xl bg-black outline-none ring-2 ring-transparent transition-shadow focus-visible:ring-primary"
-    :class="{ 'ring-primary/70': focused }"
+    class="group relative aspect-video w-full overflow-hidden rounded-xl bg-black outline-none ring-2 transition-shadow"
+    :class="focused ? 'ring-primary-600' : 'ring-surface-0'"
     aria-label="Roku video. Focus to control with the keyboard."
     @focus="focused = true"
     @blur="focused = false"
