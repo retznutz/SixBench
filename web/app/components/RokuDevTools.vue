@@ -13,6 +13,14 @@ const devTools = useRokuDevToolsStore()
 const devChannel = useRokuDevChannelStore()
 const auth = useAuthStore()
 
+// In its own window the video is elsewhere: send the node to outline to the watch page.
+if (props.poppedOut) {
+  useSgHighlightPublisher(
+    () => props.rokuId,
+    () => devTools.sgHighlight,
+  )
+}
+
 const ADMIN_TABS = ['console', 'packager']
 const TABS = ['channel', 'scenegraph', 'performance', 'registry', ...ADMIN_TABS]
 const tab = ref(

@@ -10,6 +10,40 @@ export interface SgNode {
   children: SgNode[]
 }
 
+/** A rectangle in SceneGraph UI coordinates (pixels of the channel's design resolution). */
+export interface SgRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/** Size of a channel's UI coordinate space, e.g. 1920×1080 for an FHD channel. */
+export interface SgSize {
+  width: number
+  height: number
+}
+
+/**
+ * A node to outline on the video. Plain data, so it can be sent to the watch page from a
+ * popped-out developer tools window.
+ */
+export interface SgHighlight {
+  /** e.g. `Poster #hero`. */
+  label: string
+  bounds: SgRect
+  /** The UI coordinate space `bounds` is in. */
+  uiSize: SgSize
+  /** The node or an ancestor is invisible or fully transparent. */
+  hidden: boolean
+}
+
+/** Messages on the per-Roku channel between a popped-out developer tools window and watch pages. */
+export type SgHighlightMessage =
+  | { kind: 'highlight'; highlight: SgHighlight | null }
+  /** Sent by a watch page when it starts listening, so an open pop-out answers with its current highlight. */
+  | { kind: 'request' }
+
 /** Response of GET /roku-devices/{id}/dev-tools/sgnodes. */
 export interface SgNodesResult {
   scope: SgNodeScope
