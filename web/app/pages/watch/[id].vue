@@ -10,6 +10,7 @@ const devices = useCaptureDevicesStore()
 const stream = useStreamStore()
 const remote = useRemoteStore()
 const textEdit = useRokuTextEditStore()
+const devTools = useRokuDevToolsStore()
 
 const id = computed(() => String(route.params.id))
 const decoder = computed<DecoderKind>(() => (route.query.decoder === 'mse' ? 'mse' : 'webcodecs'))
@@ -45,6 +46,10 @@ watch(devToolsOpen, (open) => {
 const name = computed(() => (device.value ? devices.displayName(device.value) : 'Encoder'))
 const rokuId = computed(() => device.value?.link?.rokuDeviceId ?? null)
 const rokuName = computed(() => device.value?.link?.rokuDevice?.friendlyName ?? null)
+
+/** SceneGraph node to outline on the video: from the dev tools below it, or from their pop-out window. */
+const poppedOutHighlight = useSgHighlightSubscription(rokuId)
+const sgHighlight = computed(() => (devToolsOpen.value ? devTools.sgHighlight : poppedOutHighlight.value))
 const rokuDevPage = computed(() => {
   const roku = device.value?.link?.rokuDevice
   return roku ? rokuDevPageUrl(roku) : null
@@ -226,7 +231,7 @@ onBeforeUnmount(() => {
     <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <div class="space-y-3">
         <VideoSurface ref="surface" :key="decoder" :decoder="decoder" :name="rokuName ?? name" @retry="start">
-          <LazySceneGraphHighlight v-if="devToolsOpen && rokuId != null" />
+          <LazySceneGraphHighlight v-if="sgHighlight" :highlight="sgHighlight" />
         </VideoSurface>
         <LazyRokuDevTools
           v-if="devToolsOpen && rokuId != null"

@@ -1,4 +1,4 @@
-import type { SgNode, SgRect, SgSize } from '../../types/roku-dev-tools'
+import type { SgHighlight, SgNode, SgRect, SgSize } from '../../types/roku-dev-tools'
 
 /** Roku UI resolutions a channel can declare (ui_resolutions in its manifest): FHD, HD, SD. */
 export const UI_RESOLUTIONS: readonly SgSize[] = [
@@ -68,6 +68,26 @@ export function pathForKey(nodes: SgNode[], key: string): SgNode[] | null {
 /** True when the node or any ancestor is invisible or fully transparent, so it isn't drawn. */
 export function isHidden(path: SgNode[]): boolean {
   return path.some((n) => n.attributes.visible === 'false' || Number.parseFloat(n.attributes.opacity ?? '') === 0)
+}
+
+/** A node's tree label: its type, plus its id when it has one. */
+export function nodeLabel(node: SgNode): string {
+  const name = node.attributes.name
+  return name ? `${node.type} #${name}` : node.type
+}
+
+/** What to outline for the node at the end of `path`; null when there is no node or it has no bounds. */
+export function toHighlight(path: SgNode[] | null, uiSize: SgSize): SgHighlight | null {
+  const node = path?.at(-1)
+  const bounds = parseBounds(node?.attributes.bounds)
+  if (!path || !node || !bounds) return null
+  // Copy the size: it may be a reactive proxy, which can't be posted to another window.
+  return {
+    label: nodeLabel(node),
+    bounds,
+    uiSize: { width: uiSize.width, height: uiSize.height },
+    hidden: isHidden(path),
+  }
 }
 
 /** Identifies a node across captures well enough to keep it selected on refresh. */

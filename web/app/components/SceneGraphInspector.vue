@@ -2,10 +2,9 @@
 import type { TreeNode } from 'primevue/treenode'
 import type { SgNode, SgNodeScope } from '~/types/roku-dev-tools'
 import { downloadBlob, snapshotFileName } from '~/lib/stream/snapshot'
-import { DEFAULT_UI_SIZE } from '~/lib/scenegraph/bounds'
+import { DEFAULT_UI_SIZE, nodeLabel as label } from '~/lib/scenegraph/bounds'
 
-/** `onVideo`: the video is on this page, so the selected node is outlined on it (not in the pop-out window). */
-const props = defineProps<{ rokuId: number; onVideo?: boolean }>()
+const props = defineProps<{ rokuId: number }>()
 
 const devTools = useRokuDevToolsStore()
 
@@ -36,11 +35,6 @@ const scopeOptions = [
 const KEY_ATTRIBUTES = ['name', 'extends', 'focused', 'visible', 'opacity', 'bounds', 'translation', 'uri', 'text']
 
 const canLoad = computed(() => scope.value !== 'Nodes' || nodeId.value.trim().length > 0)
-
-function label(node: SgNode): string {
-  const name = node.attributes.name
-  return name ? `${node.type} #${name}` : node.type
-}
 
 /** Maps nodes to PrimeVue tree nodes; keys are index paths ("0-3-1") so lookups are cheap. */
 function toTree(nodes: SgNode[], prefix = ''): TreeNode[] {
@@ -281,9 +275,7 @@ function download() {
             <p v-if="!selectedAttributes.length" class="text-xs text-surface-500">No fields reported.</p>
           </template>
           <p v-else class="text-sm text-surface-500">
-            Select a node to see its fields.<template v-if="onVideo">
-              Selected and hovered nodes are outlined on the video.</template
-            >
+            Select a node to see its fields. Selected and hovered nodes are outlined on the video.
           </p>
         </div>
       </div>

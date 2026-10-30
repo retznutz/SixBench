@@ -4,12 +4,13 @@ import type {
   ChanPerf,
   ChanPerfSample,
   RokuRegistry,
+  SgHighlight,
   SgNode,
   SgNodesQuery,
   SgNodesResult,
   SgSize,
 } from '~/types/roku-dev-tools'
-import { nodeSignature, pathForKey, uiSize } from '~/lib/scenegraph/bounds'
+import { DEFAULT_UI_SIZE, nodeSignature, pathForKey, toHighlight, uiSize } from '~/lib/scenegraph/bounds'
 
 /** How many performance samples to keep for the trend lines. */
 export const PERF_HISTORY = 60
@@ -39,7 +40,9 @@ export const useRokuDevToolsStore = defineStore('rokuDevTools', () => {
 
   const sgSelectedPath = computed(() => sgPath(sgSelectedKey.value))
   /** What to outline on the video: the hovered node, else the selected one. */
-  const sgHighlightPath = computed(() => sgPath(sgHoveredKey.value) ?? sgSelectedPath.value)
+  const sgHighlight = computed<SgHighlight | null>(() =>
+    toHighlight(sgPath(sgHoveredKey.value) ?? sgSelectedPath.value, sgUiSize.value ?? DEFAULT_UI_SIZE),
+  )
 
   const perfSamples = ref<ChanPerfSample[]>([])
   const perfError = ref<ApiError | null>(null)
@@ -145,7 +148,7 @@ export const useRokuDevToolsStore = defineStore('rokuDevTools', () => {
     sgHoveredKey,
     sgUiSize,
     sgSelectedPath,
-    sgHighlightPath,
+    sgHighlight,
     perfSamples,
     perfError,
     perfPolling,

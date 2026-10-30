@@ -4,9 +4,11 @@ import {
   containRect,
   findScene,
   isHidden,
+  nodeLabel,
   nodeSignature,
   parseBounds,
   pathForKey,
+  toHighlight,
   uiSize,
 } from '../app/lib/scenegraph/bounds'
 
@@ -92,6 +94,38 @@ describe('isHidden', () => {
     expect(isHidden([node('Group', { visible: 'false' }), node('Poster')])).toBe(true)
     expect(isHidden([node('Group', { opacity: '0.0' }), node('Poster')])).toBe(true)
     expect(isHidden([node('Poster', { opacity: '' })])).toBe(false)
+  })
+})
+
+describe('nodeLabel', () => {
+  it('adds the id when there is one', () => {
+    expect(nodeLabel(node('Label', { name: 'title' }))).toBe('Label #title')
+    expect(nodeLabel(node('Poster'))).toBe('Poster')
+  })
+})
+
+describe('toHighlight', () => {
+  const ui = { width: 1280, height: 720 }
+
+  it('describes the last node of the path', () => {
+    const path = [node('Group', { visible: 'false' }), node('Poster', { name: 'hero', bounds: '{10, 20, 300, 200}' })]
+    expect(toHighlight(path, ui)).toEqual({
+      label: 'Poster #hero',
+      bounds: { x: 10, y: 20, width: 300, height: 200 },
+      uiSize: ui,
+      hidden: true,
+    })
+  })
+
+  it('is null without a node or bounds', () => {
+    expect(toHighlight(null, ui)).toBeNull()
+    expect(toHighlight([node('Poster')], ui)).toBeNull()
+  })
+
+  it('can be posted to another window', () => {
+    const h = toHighlight([node('Poster', { bounds: '{0, 0, 1, 1}' })], ui)
+    expect(structuredClone(h)).toEqual(h)
+    expect(h!.uiSize).not.toBe(ui)
   })
 })
 

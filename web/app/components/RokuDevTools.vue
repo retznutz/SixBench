@@ -13,6 +13,14 @@ const devTools = useRokuDevToolsStore()
 const devChannel = useRokuDevChannelStore()
 const auth = useAuthStore()
 
+// In its own window the video is elsewhere: send the node to outline to the watch page.
+if (props.poppedOut) {
+  useSgHighlightPublisher(
+    () => props.rokuId,
+    () => devTools.sgHighlight,
+  )
+}
+
 const ADMIN_TABS = ['console', 'packager']
 const TABS = ['channel', 'scenegraph', 'performance', 'registry', ...ADMIN_TABS]
 const tab = ref(
@@ -97,7 +105,7 @@ onBeforeUnmount(() => {
         <TabPanel v-if="auth.isAdmin" value="console"
           ><RokuDebugConsole :roku-id="rokuId" :active="tab === 'console'"
         /></TabPanel>
-        <TabPanel value="scenegraph"><SceneGraphInspector :roku-id="rokuId" :on-video="!poppedOut" /></TabPanel>
+        <TabPanel value="scenegraph"><SceneGraphInspector :roku-id="rokuId" /></TabPanel>
         <TabPanel value="performance"
           ><ChannelPerformance :roku-id="rokuId" :active="tab === 'performance'"
         /></TabPanel>

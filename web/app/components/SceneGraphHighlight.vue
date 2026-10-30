@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { containRect, DEFAULT_UI_SIZE, isHidden, parseBounds } from '~/lib/scenegraph/bounds'
+import type { SgHighlight } from '~/types/roku-dev-tools'
+import { containRect, DEFAULT_UI_SIZE } from '~/lib/scenegraph/bounds'
 
 /**
- * Outlines the SceneGraph node selected (or hovered) in the inspector on top of the video.
+ * Outlines a SceneGraph node (selected or hovered in the inspector) on top of the video.
  * Goes in VideoSurface's slot: it fills the surface, finds where the letterboxed picture is drawn,
  * and places the node's bounds in it as percentages of the channel's UI size, so page scroll,
  * layout scaling, fullscreen and the capture resolution don't matter.
  */
-const devTools = useRokuDevToolsStore()
+const props = defineProps<{ highlight: SgHighlight | null }>()
+
 const stream = useStreamStore()
 
 const layer = ref<HTMLElement | null>(null)
@@ -24,11 +26,8 @@ onMounted(() => {
 })
 onBeforeUnmount(() => observer?.disconnect())
 
-const path = computed(() => devTools.sgHighlightPath)
-const node = computed(() => path.value?.at(-1) ?? null)
-const bounds = computed(() => parseBounds(node.value?.attributes.bounds))
-const ui = computed(() => devTools.sgUiSize ?? DEFAULT_UI_SIZE)
-const hidden = computed(() => (path.value ? isHidden(path.value) : false))
+const bounds = computed(() => props.highlight?.bounds ?? null)
+const ui = computed(() => props.highlight?.uiSize ?? DEFAULT_UI_SIZE)
 
 /** Where the picture is drawn: the canvas/video uses object-contain, so it is letterboxed by the frame's aspect. */
 const frameStyle = computed(() => {
@@ -60,11 +59,8 @@ const offScreen = computed(() => {
 })
 
 const label = computed(() => {
-  const n = node.value
-  if (!n) return ''
-  const name = n.attributes.name ? `${n.type} #${n.attributes.name}` : n.type
-  const b = bounds.value
-  return b ? `${name} · ${Math.round(b.width)}×${Math.round(b.height)}` : name
+  const h = props.highlight
+  return h ? `${h.label} · ${Math.round(h.bounds.width)}×${Math.round(h.bounds.height)}` : ''
 })
 
 /** Keep the label inside the picture: below the box near the top edge, right-aligned past the middle. */
@@ -74,7 +70,7 @@ const labelRight = computed(() => (bounds.value?.x ?? 0) > ui.value.width / 2)
 
 <template>
   <div ref="layer" class="pointer-events-none absolute inset-0" aria-hidden="true">
-    <div v-if="node && bounds" class="absolute overflow-hidden" :style="frameStyle">
+    <div v-if="highlight" class="absolute overflow-hidden" :style="frameStyle">
       <p
         v-if="offScreen"
         class="absolute left-2 top-2 rounded bg-primary-600 px-1.5 py-0.5 font-mono text-[11px] text-white"
@@ -84,14 +80,14 @@ const labelRight = computed(() => (bounds.value?.x ?? 0) > ui.value.width / 2)
       <div
         v-else
         class="absolute min-h-0.5 min-w-0.5 rounded-sm border-2 bg-primary-400/15"
-        :class="hidden ? 'border-dashed border-primary-300 opacity-70' : 'border-primary-500'"
+        :class="highlight.hidden ? 'border-dashed border-primary-300 opacity-70' : 'border-primary-500'"
         :style="boxStyle ?? undefined"
       >
         <span
           class="absolute whitespace-nowrap rounded-sm bg-primary-600 px-1.5 py-0.5 font-mono text-[11px] leading-none text-white"
           :class="[labelBelow ? 'top-full mt-0.5' : 'bottom-full mb-0.5', labelRight ? '-right-0.5' : '-left-0.5']"
         >
-          {{ label }}{{ hidden ? ' (hidden)' : '' }}
+          {{ label }}{{ highlight.hidden ? ' (hidden)' : '' }}
         </span>
       </div>
     </div>
