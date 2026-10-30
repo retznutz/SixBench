@@ -4,6 +4,7 @@ import { HubConnectionState } from '@microsoft/signalr'
 import type { RokuTextEditState } from '~/types/remote'
 
 const AUTO_OPEN_KEY = 'sixbench.autoOpenText'
+const LIVE_TYPING_KEY = 'sixbench.liveTyping'
 
 /** Remembers whether the text box opens by itself; storage may be unavailable. */
 function readAutoOpen() {
@@ -11,6 +12,23 @@ function readAutoOpen() {
     return localStorage.getItem(AUTO_OPEN_KEY) !== '0'
   } catch {
     return true
+  }
+}
+
+/** Remembers the typing mode; storage may be unavailable. */
+function readLiveTyping() {
+  try {
+    return localStorage.getItem(LIVE_TYPING_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function persist(key: string, on: boolean) {
+  try {
+    localStorage.setItem(key, on ? '1' : '0')
+  } catch {
+    // Not persisted; the toggle still works for this visit.
   }
 }
 
@@ -28,15 +46,15 @@ export const useRokuTextEditStore = defineStore('rokuTextEdit', () => {
   const open = computed(() => state.value?.open === true)
   /** Open the text box when a text field is selected on the Roku. */
   const autoOpen = ref(readAutoOpen())
+  /**
+   * Send each key as it's pressed. While a text field is selected on the Roku, keys pressed on the video are typed
+   * there instead of acting as remote shortcuts, and the text box doesn't open by itself.
+   */
+  const liveTyping = ref(readLiveTyping())
 
   // `watch` below is this store's action, so Vue's is imported under another name.
-  watchRef(autoOpen, (on) => {
-    try {
-      localStorage.setItem(AUTO_OPEN_KEY, on ? '1' : '0')
-    } catch {
-      // Not persisted; the toggle still works for this visit.
-    }
-  })
+  watchRef(autoOpen, (on) => persist(AUTO_OPEN_KEY, on))
+  watchRef(liveTyping, (on) => persist(LIVE_TYPING_KEY, on))
 
   let wired = false
 
@@ -95,5 +113,5 @@ export const useRokuTextEditStore = defineStore('rokuTextEdit', () => {
     }
   }
 
-  return { rokuId, state, open, autoOpen, connected, watch, unwatch }
+  return { rokuId, state, open, autoOpen, liveTyping, connected, watch, unwatch }
 })
