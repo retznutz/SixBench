@@ -31,6 +31,7 @@ export interface SgSize {
 export interface SgHighlight {
   /** e.g. `Poster #hero`. */
   label: string
+  /** Where the node is drawn, in the Scene's coordinates (ancestors' transforms applied). */
   bounds: SgRect
   /** The UI coordinate space `bounds` is in. */
   uiSize: SgSize
