@@ -33,20 +33,58 @@ const REPEATABLE: ReadonlySet<RokuKey> = new Set([
 
 const lookup = new Map<string, RokuKey>(KEYBOARD_SHORTCUTS.flatMap((s) => s.keys.map((k) => [k, s.roku] as const)))
 
+/**
+ * Keys that still act on the Roku while typing. Everything else that prints a character (Space, letters, `+`, `,` …)
+ * is typed instead of triggering its shortcut.
+ */
+const TYPING_KEYS: ReadonlyMap<string, RokuKey> = new Map([
+  ['ArrowUp', 'Up'],
+  ['ArrowDown', 'Down'],
+  ['ArrowLeft', 'Left'],
+  ['ArrowRight', 'Right'],
+  ['Backspace', 'Backspace'],
+  ['Enter', 'Enter'],
+  ['Escape', 'Back'],
+])
+
 export interface KeyboardShortcutHandlers {
   onKey: (key: RokuKey) => void
   /** "T" opens the text-entry dialog. */
   onTextEntry: () => void
   /** "S" saves a screenshot. */
   onScreenshot?: () => void
+  /** While true, keys are typed on the Roku with `onText` instead of acting as shortcuts. */
+  typing?: Ref<boolean>
+  /** Types one character on the Roku. */
+  onText?: (char: string) => void
 }
 
 /**
  * Maps keyboard input on `target` to Roku keys. Modifier combos are ignored so browser shortcuts keep working.
  */
 export function useKeyboardShortcuts(target: Ref<HTMLElement | null>, handlers: KeyboardShortcutHandlers) {
+  /** Typing mode: printable keys become text; arrows, Backspace, Enter and Esc still drive the Roku. */
+  function onTypingKeydown(event: KeyboardEvent) {
+    if (event.isComposing) return
+    const roku = TYPING_KEYS.get(event.key)
+    if (roku) {
+      event.preventDefault()
+      if (event.repeat && roku !== 'Backspace' && !REPEATABLE.has(roku)) return
+      handlers.onKey(roku)
+    } else if (event.key.length === 1) {
+      event.preventDefault()
+      // A held key would queue a request per repeat; type it once.
+      if (!event.repeat) handlers.onText?.(event.key)
+    }
+  }
+
   function onKeydown(event: KeyboardEvent) {
     if (event.ctrlKey || event.metaKey || event.altKey) return
+
+    if (handlers.typing?.value && handlers.onText) {
+      onTypingKeydown(event)
+      return
+    }
 
     if (event.key === 't' || event.key === 'T') {
       event.preventDefault()

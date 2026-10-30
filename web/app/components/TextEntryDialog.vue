@@ -5,25 +5,9 @@ const props = defineProps<{ rokuId: number | null }>()
 const remote = useRemoteStore()
 const textEdit = useRokuTextEditStore()
 const text = ref('')
-const live = ref(readLivePref())
+/** Set in the watch page's Typing settings. */
+const live = computed(() => textEdit.liveTyping)
 const sending = ref(false)
-
-/** Remembers the typing mode; storage may be unavailable. */
-function readLivePref() {
-  try {
-    return localStorage.getItem('sixbench.liveTyping') === '1'
-  } catch {
-    return false
-  }
-}
-
-watch(live, (on) => {
-  try {
-    localStorage.setItem('sixbench.liveTyping', on ? '1' : '0')
-  } catch {
-    // Not persisted; the toggle still works for this visit.
-  }
-})
 
 async function sendAll() {
   if (props.rokuId == null || !text.value) return
@@ -61,11 +45,7 @@ function onLiveKeydown(event: KeyboardEvent) {
 <template>
   <Dialog v-model:visible="visible" modal header="Type on the Roku" class="w-[min(28rem,calc(100vw-2rem))]">
     <div class="flex flex-col gap-4">
-      <label class="flex items-center gap-3 text-sm text-surface-300">
-        <ToggleSwitch v-model="live" input-id="live-typing" />
-        <span>Live typing <span class="text-surface-500">— each key is sent as you type</span></span>
-      </label>
-      <label class="flex items-center gap-3 text-sm text-surface-300">
+      <label v-if="!live" class="flex items-center gap-3 text-sm text-surface-300">
         <ToggleSwitch v-model="textEdit.autoOpen" input-id="auto-open-text" />
         <span>
           Open automatically
@@ -76,7 +56,7 @@ function onLiveKeydown(event: KeyboardEvent) {
       <InputText
         v-if="live"
         autofocus
-        placeholder="Start typing…"
+        placeholder="Live typing — start typing…"
         class="w-full"
         aria-label="Live typing"
         :model-value="''"
