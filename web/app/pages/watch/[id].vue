@@ -74,8 +74,16 @@ watch(
       textOpenedByRoku = false
       return
     }
-    // Live typing types straight from the video, so the text box stays out of the way.
-    if (textEdit.liveTyping) return
+    // Live typing types straight from the video, so the text box stays out of the way. Give the video focus so the
+    // keys reach it rather than, say, the remote's Search button (where Space would press it again), unless the
+    // user is busy in another text box.
+    if (textEdit.liveTyping) {
+      const active = document.activeElement
+      const editing =
+        active instanceof HTMLElement && (active.matches('input, textarea, select') || active.isContentEditable)
+      if (!editing) surface.value?.root?.focus()
+      return
+    }
     if (!textEdit.autoOpen || textOpen.value || state.textEditId === dismissedTextEditId) return
     textOpen.value = true
     textOpenedByRoku = true
