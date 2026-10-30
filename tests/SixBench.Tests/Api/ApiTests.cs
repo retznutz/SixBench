@@ -146,6 +146,13 @@ public sealed class ApiTests(ApiTests.Factory factory) : IClassFixture<ApiTests.
         Assert.Equal(HttpStatusCode.NotFound, (await _client.PostAsync("/api/v1/roku-devices/999/dev-channel", upload)).StatusCode);
     }
 
+    [Theory]
+    [InlineData("a", HttpStatusCode.NotFound)]
+    [InlineData(" ", HttpStatusCode.NotFound)]
+    [InlineData("", HttpStatusCode.BadRequest)]
+    public async Task Text_endpoint_accepts_whitespace_but_not_empty(string text, HttpStatusCode expected) =>
+        Assert.Equal(expected, (await _client.PostAsJsonAsync("/api/v1/roku-devices/999/text", new { text })).StatusCode);
+
     [Fact]
     public async Task Stream_endpoint_requires_websocket_and_is_hidden_from_swagger()
     {

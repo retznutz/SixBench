@@ -7,7 +7,7 @@ namespace SixBench.Common.Dtos;
 /// </summary>
 public sealed class TextInputRequest
 {
-    /// <summary>The text to type, one character at a time.</summary>
-    [Required, StringLength(256, MinimumLength = 1)]
+    /// <summary>The text to type, one character at a time. Whitespace-only text (e.g. a single space) is allowed.</summary>
+    [Required(AllowEmptyStrings = true), StringLength(256, MinimumLength = 1)]
     public string Text { get; set; } = string.Empty;
 }
