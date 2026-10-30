@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
         <TabPanel v-if="auth.isAdmin" value="console"
           ><RokuDebugConsole :roku-id="rokuId" :active="tab === 'console'"
         /></TabPanel>
-        <TabPanel value="scenegraph"><SceneGraphInspector :roku-id="rokuId" /></TabPanel>
+        <TabPanel value="scenegraph"><SceneGraphInspector :roku-id="rokuId" :on-video="!poppedOut" /></TabPanel>
         <TabPanel value="performance"
           ><ChannelPerformance :roku-id="rokuId" :active="tab === 'performance'"
         /></TabPanel>

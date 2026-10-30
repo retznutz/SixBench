@@ -225,7 +225,9 @@ onBeforeUnmount(() => {
 
     <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
       <div class="space-y-3">
-        <VideoSurface ref="surface" :key="decoder" :decoder="decoder" :name="rokuName ?? name" @retry="start" />
+        <VideoSurface ref="surface" :key="decoder" :decoder="decoder" :name="rokuName ?? name" @retry="start">
+          <LazySceneGraphHighlight v-if="devToolsOpen && rokuId != null" />
+        </VideoSurface>
         <LazyRokuDevTools
           v-if="devToolsOpen && rokuId != null"
           :roku-id="rokuId"

@@ -2,8 +2,10 @@
 import type { TreeNode } from 'primevue/treenode'
 import type { SgNode, SgNodeScope } from '~/types/roku-dev-tools'
 import { downloadBlob, snapshotFileName } from '~/lib/stream/snapshot'
+import { DEFAULT_UI_SIZE } from '~/lib/scenegraph/bounds'
 
-const props = defineProps<{ rokuId: number }>()
+/** `onVideo`: the video is on this page, so the selected node is outlined on it (not in the pop-out window). */
+const props = defineProps<{ rokuId: number; onVideo?: boolean }>()
 
 const devTools = useRokuDevToolsStore()
 
@@ -12,7 +14,17 @@ const nodeId = ref('')
 const sizes = ref(false)
 const filter = ref('')
 const expandedKeys = ref<Record<string, boolean>>({})
-const selectionKeys = ref<Record<string, boolean>>({})
+/** The tree's selection lives in the store so the watch page can outline the node on the video. */
+const selectionKeys = computed<Record<string, boolean>>({
+  get: () => (devTools.sgSelectedKey ? { [devTools.sgSelectedKey]: true } : {}),
+  set: (keys) => (devTools.sgSelectedKey = Object.keys(keys)[0] ?? null),
+})
+const uiSize = computed(() => devTools.sgUiSize ?? DEFAULT_UI_SIZE)
+const uiSizeHint = computed(() =>
+  devTools.sgUiSize
+    ? "The channel's UI coordinate space, from its Scene node. Node bounds are in it."
+    : 'No Scene node captured yet, so FHD is assumed. Capture all nodes or roots to read it.',
+)
 
 const scopeOptions = [
   { label: 'All nodes', value: 'All' },
@@ -63,21 +75,11 @@ const filteredTree = computed(() => {
 
 // While filtering, show every match expanded.
 watch(filter, (term) => {
+  devTools.sgHoveredKey = null
   if (term.trim()) expandedKeys.value = allKeys(filteredTree.value)
 })
 
-const selected = computed<SgNode | null>(() => {
-  const key = Object.keys(selectionKeys.value)[0]
-  if (!key || !devTools.sgNodes) return null
-  let nodes = devTools.sgNodes.nodes
-  let node: SgNode | undefined
-  for (const index of key.split('-').map(Number)) {
-    node = nodes[index]
-    if (!node) return null
-    nodes = node.children
-  }
-  return node ?? null
-})
+const selected = computed<SgNode | null>(() => devTools.sgSelectedPath?.at(-1) ?? null)
 
 const selectedAttributes = computed(() => {
   if (!selected.value) return []
@@ -113,23 +115,29 @@ function findFocused(nodes: SgNode[], prefix = '', depth = 0): { key: string; de
 
 const focusedKey = computed(() => findFocused(devTools.sgNodes?.nodes ?? [])?.key ?? null)
 
-function selectKey(key: string) {
-  filter.value = ''
+/** Expands the ancestors of `key` and scrolls its row into view. */
+function reveal(key: string) {
   const parts = key.split('-')
   const expanded = { ...expandedKeys.value }
   for (let i = 1; i < parts.length; i++) expanded[parts.slice(0, i).join('-')] = true
   expandedKeys.value = expanded
-  selectionKeys.value = { [key]: true }
   nextTick(() => document.querySelector('.sg-tree [aria-selected="true"]')?.scrollIntoView({ block: 'nearest' }))
+}
+
+function selectKey(key: string) {
+  filter.value = ''
+  devTools.sgSelectedKey = key
+  reveal(key)
 }
 
 async function load() {
   if (!canLoad.value) return
   await devTools.loadSgNodes(props.rokuId, { scope: scope.value, nodeId: nodeId.value.trim(), sizes: sizes.value })
-  selectionKeys.value = {}
   expandedKeys.value = {}
   // Open the top level so there is something to look at.
   for (const n of tree.value) if (n.children?.length) expandedKeys.value[n.key] = true
+  // The store keeps the selection when the same node is still there; keep it in sight.
+  if (devTools.sgSelectedKey) reveal(devTools.sgSelectedKey)
 }
 
 function download() {
@@ -188,6 +196,9 @@ function download() {
           {{ devTools.sgNodes.totalNodes.toLocaleString() }} nodes · captured
           {{ new Date(devTools.sgNodes.retrievedUtc).toLocaleTimeString() }}
         </span>
+        <span v-tooltip.bottom="uiSizeHint" tabindex="0">
+          · {{ uiSize.width }}×{{ uiSize.height }} UI{{ devTools.sgUiSize ? '' : ' (assumed)' }}
+        </span>
         <span class="flex-1" />
         <Button
           v-if="focusedKey"
@@ -228,9 +239,14 @@ function download() {
             selection-mode="single"
             :meta-key-selection="false"
             class="sg-tree max-h-[28rem] overflow-auto !bg-transparent !p-1 text-sm"
+            @mouseleave="devTools.sgHoveredKey = null"
           >
             <template #default="{ node }">
-              <span class="flex min-w-0 items-center gap-1.5">
+              <span
+                class="flex min-w-0 items-center gap-1.5"
+                @mouseenter="devTools.sgHoveredKey = node.key"
+                @mouseleave="devTools.sgHoveredKey = null"
+              >
                 <span class="truncate font-mono text-xs">{{ node.label }}</span>
                 <i
                   v-if="(node.data as SgNode).attributes.focused === 'true'"
@@ -264,7 +280,11 @@ function download() {
             </dl>
             <p v-if="!selectedAttributes.length" class="text-xs text-surface-500">No fields reported.</p>
           </template>
-          <p v-else class="text-sm text-surface-500">Select a node to see its fields.</p>
+          <p v-else class="text-sm text-surface-500">
+            Select a node to see its fields.<template v-if="onVideo">
+              Selected and hovered nodes are outlined on the video.</template
+            >
+          </p>
         </div>
       </div>
     </template>

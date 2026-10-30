@@ -83,6 +83,9 @@ defineExpose({ root, canvas, video, screenshot, thumbnail })
     <canvas v-if="props.decoder === 'webcodecs'" ref="canvas" class="size-full object-contain" />
     <video v-else ref="video" class="size-full object-contain" muted playsinline autoplay />
 
+    <!-- Overlays drawn on the picture (e.g. SceneGraph highlights); below the status cover and controls. -->
+    <slot />
+
     <div
       v-if="overlay"
       class="absolute inset-0 grid place-items-center bg-black/70 p-6 text-center"

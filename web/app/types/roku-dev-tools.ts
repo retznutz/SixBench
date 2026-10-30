@@ -10,6 +10,20 @@ export interface SgNode {
   children: SgNode[]
 }
 
+/** A rectangle in SceneGraph UI coordinates (pixels of the channel's design resolution). */
+export interface SgRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/** Size of a channel's UI coordinate space, e.g. 1920×1080 for an FHD channel. */
+export interface SgSize {
+  width: number
+  height: number
+}
+
 /** Response of GET /roku-devices/{id}/dev-tools/sgnodes. */
 export interface SgNodesResult {
   scope: SgNodeScope
